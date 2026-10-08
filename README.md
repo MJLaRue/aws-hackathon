@@ -65,3 +65,7 @@ excluded from totals and some rows are synthetic; both are reported at upload. T
 ## Deploying to AWS
 
 CDK stack, deploy steps and teardown are in [infra/README.md](infra/README.md).
+
+## Dashboard
+
+Tabs: Overview (FY2027 outlook, KPIs with sparklines, fund-source split, projected FY2027 vs FY2026 budget per entity), Trends, Forecast, Anomalies, Benchmark. Trends and Forecast switch between monthly and quarterly grain; monthly needs a dataset with a `month` column. The Forecast tab shows the 80% and 95% ranges, model and cross-validated error, a what-if annual budget, and CSV export. Styling follows brand.uic.edu (Navy Pier Blue, Fire Engine Red, Expo White) with the brand's fallback faces (Bricolage Grotesque, Arial, Azeret Mono).

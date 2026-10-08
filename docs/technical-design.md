@@ -824,10 +824,12 @@ Rationale from profiling: quarterly row counts vary from 12 to 33 (a 2.75× rang
 The 12 observed ratio values per entity are the training input. The model predicts the ratio for each forecast quarter. The application layer recovers a dollar forecast:
 
 ```
-dollar_forecast = predicted_ratio × planned_budget_total
+dollar_forecast = predicted_ratio × planned_budget_total / periods_per_year
 ```
 
-where `planned_budget_total` is `SUM(budget)` for the entity over the most recent completed fiscal year (FY2026). This value is stored at forecast-time in `forecast_results` so that subsequent cached reads return consistent dollar values even if the underlying data changes. Dollar prediction intervals are computed by the same multiplicative transform: `dollar_pi_low = pi_ratio_low × planned_budget_total`.
+where `planned_budget_total` is `SUM(budget)` for the entity over the most recent completed fiscal year (FY2026) and `periods_per_year` is 4 for the quarterly grain and 12 for the monthly grain, so each forecast point is the dollar value of **one period**. (Earlier revisions omitted the division and reported each quarter at roughly a full year's budget; corrected 2026-10-08.) This value is stored at forecast-time in `forecast_results` so that subsequent cached reads return consistent dollar values even if the underlying data changes. Dollar prediction intervals are computed by the same multiplicative transform: `dollar_pi_low = pi_ratio_low × planned_budget_total / periods_per_year`.
+
+**Monthly grain (added 2026-10-08).** `run_forecast` and `explain_variance` accept `grain: "quarter" | "month"`. Monthly forecasts use the same ratio target per calendar month (36 observed months, July 2023 to June 2026) with a seasonal period of 12: `SeasonalNaive` needs 24 months, cross-validation trains on at least 24 months (up to 4 folds), and a single-fold history of 25 months is capped at Low confidence. Interior gaps in an entity's monthly history are filled by linear interpolation when at least 24 real months exist and the series ends in June 2026; the count is returned as `interpolated_periods`. Otherwise the call returns a `refusal` pointing at the quarterly forecast. Cached rows carry a `grain` column, so quarterly and monthly forecasts coexist.
 
 `source_forecast` is **not** used as a model input. It is carried as `source_forecast` for lineage and appears only in the benchmark panel (section 5.8).
 
