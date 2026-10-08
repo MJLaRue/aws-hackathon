@@ -42,19 +42,29 @@ import { api, setCsrf, qs, money, exactMoney, number, today } from "./api";
 import "./styles.css";
 
 const navigation = [
-  ["overview", "Overview", LayoutDashboard, "budgets"],
-  ["budget", "Budget matrix", Table2, "budgets"],
-  ["expenses", "Expenditures", Receipt, "expenses"],
-  ["drafts", "Draft workspace", Layers, "drafts"],
-  ["commitments", "Temporary board", ClipboardList, "budgets"],
-  ["salaries", "Faculty & staff", Users, "salaries"],
-  ["imports", "Import data", Upload, "imports"],
-  ["notes", "Notes", MessageSquare, "notes"],
-  ["audit", "Audit history", History, "audit"],
-  ["archives", "Fiscal years", Archive, "budgets"],
-  ["admin", "Administration", Settings, "admin"],
+  ["overview", "Dashboard", LayoutDashboard, "budgets"],
+  ["budget", "Budget plan", Table2, "budgets"],
+  ["expenses", "Spending", Receipt, "expenses"],
+  ["drafts", "Proposed changes", Layers, "drafts"],
+  ["commitments", "Commitments", ClipboardList, "budgets"],
+  ["salaries", "People & pay", Users, "salaries"],
+  ["imports", "Data uploads", Upload, "imports"],
+  ["notes", "Discussions", MessageSquare, "notes"],
+  ["audit", "Activity log", History, "audit"],
+  ["archives", "Budget years", Archive, "budgets"],
+  ["admin", "Workspace settings", Settings, "admin"],
 ];
 const titles = Object.fromEntries(navigation.map(([id, title]) => [id, title]));
+const resourceLabels = {
+  budgets: titles.budget,
+  expenses: titles.expenses,
+  drafts: titles.drafts,
+  salaries: titles.salaries,
+  imports: titles.imports,
+  notes: titles.notes,
+  audit: titles.audit,
+  admin: titles.admin,
+};
 const navigationGroups = [
   [
     "Workspace",
@@ -64,8 +74,8 @@ const navigationGroups = [
 ];
 const descriptions = {
   overview: "Your department’s finances, in focus.",
-  budget: "Opening budgets, live adjustments, and the plan ahead.",
-  expenses: "Track actual spending against your opening base budget.",
+  budget: "Starting allocations, published changes, and the plan ahead.",
+  expenses: "Track actual spending against your starting allocation.",
   drafts: "Review proposed changes before publishing to the live budget.",
   commitments:
     "Keep temporary allocations and outstanding commitments in view.",
@@ -441,8 +451,8 @@ function Landing({ onSignIn }) {
             </h1>
             <p>
               Bring department budgets, expenditures, and salary planning
-              together. One shared workspace, from the opening balance to the
-              next fiscal year.
+              together. One shared workspace, from the starting allocation to
+              the next fiscal year.
             </p>
             <div className="hero-actions">
               <Button onClick={onSignIn} variant="dark">
@@ -460,9 +470,13 @@ function Landing({ onSignIn }) {
         </section>
         <div className="landing-pillars">
           {[
-            [Wallet, "Plan with clarity", "Budgets & live adjustments"],
+            [Wallet, "Plan with clarity", "Budgets & published changes"],
             [Receipt, "Track every expense", "Actual spending, in view"],
-            [Layers, "Review together", "Drafts, notes & audit history"],
+            [
+              Layers,
+              "Review together",
+              "Proposals, discussions & activity log",
+            ],
           ].map(([Icon, title, detail]) => (
             <div key={title}>
               <Icon size={23} />
@@ -487,17 +501,17 @@ function Landing({ onSignIn }) {
               [
                 Table2,
                 "Build your budget",
-                "Set opening allocations and track adjustments across Banner accounts.",
+                "Set starting allocations and track budget changes across Banner accounts.",
               ],
               [
                 Layers,
                 "Review changes",
-                "Stage changes in a draft workspace and publish when the plan is ready.",
+                "Propose changes, review their impact, and publish when the plan is ready.",
               ],
               [
                 History,
                 "Keep the context",
-                "Follow actual spending, add notes, and trace changes through audit history.",
+                "Follow actual spending, discuss changes, and trace updates through the activity log.",
               ],
             ].map(([Icon, title, text], index) => (
               <article key={title}>
@@ -522,12 +536,12 @@ function Landing({ onSignIn }) {
               [
                 Wallet,
                 "A budget you can follow",
-                "See opening balances, signed adjustments, and planned totals by Banner account.",
+                "See starting allocations, signed adjustments, and planned totals by Banner account.",
               ],
               [
                 MessageSquare,
                 "Changes with context",
-                "Review drafts, keep notes, and trace updates through a clear audit history.",
+                "Review proposals, discuss changes, and trace updates through a clear activity log.",
               ],
               [
                 Users,
@@ -659,27 +673,27 @@ function Overview({ context, version, go, can }) {
         <>
           <div className="stats-grid">
             <Stat
-              label="Opening base budget"
+              label="Starting allocation"
               value={money(data.totals.base_amount)}
               detail="Approved starting allocation"
               icon={Wallet}
             />
             <Stat
-              label="Planned budget"
+              label="Budget plan total"
               value={money(data.totals.planned_budget)}
-              detail={`${money(data.totals.adjustments)} in live adjustments`}
+              detail={`${money(data.totals.adjustments)} in published changes`}
               icon={TrendingUp}
             />
             <Stat
-              label="Actual expenditures"
+              label="Recorded spending"
               value={money(data.totals.spent)}
               detail="Recorded expenses this fiscal year"
               icon={Receipt}
             />
             <Stat
-              label="Remaining base balance"
+              label="Unspent allocation"
               value={money(data.totals.remaining_base)}
-              detail="Opening base less actual expenses"
+              detail="Starting allocation less actual expenses"
               accent
               icon={CircleDollarSign}
             />
@@ -712,7 +726,10 @@ function Overview({ context, version, go, can }) {
                   <ClipboardList size={20} />
                 </span>
                 <span>
-                  <strong>{data.commitments.count} open commitments</strong>
+                  <strong>
+                    {data.commitments.count} active commitment
+                    {Number(data.commitments.count) === 1 ? "" : "s"}
+                  </strong>
                   <small>
                     {money(data.commitments.amount)} in signed allocations
                   </small>
@@ -725,7 +742,10 @@ function Overview({ context, version, go, can }) {
                     <Layers size={20} />
                   </span>
                   <span>
-                    <strong>{data.pending_drafts} pending drafts</strong>
+                    <strong>
+                      {data.pending_drafts} proposal
+                      {Number(data.pending_drafts) === 1 ? "" : "s"} to review
+                    </strong>
                     <small>Changes awaiting review</small>
                   </span>
                   <ChevronRight size={17} />
@@ -737,7 +757,10 @@ function Overview({ context, version, go, can }) {
                     <MessageSquare size={20} />
                   </span>
                   <span>
-                    <strong>{data.unresolved_notes} open notes</strong>
+                    <strong>
+                      {data.unresolved_notes} open discussion
+                      {Number(data.unresolved_notes) === 1 ? "" : "s"}
+                    </strong>
                     <small>Keep the discussion moving</small>
                   </span>
                   <ChevronRight size={17} />
@@ -752,11 +775,11 @@ function Overview({ context, version, go, can }) {
           <section className="card">
             <div className="card-header">
               <div>
-                <h2>Budget at a glance</h2>
+                <h2>Allocation overview</h2>
                 <p>Your allocation across expense categories</p>
               </div>
               <Button variant="ghost" onClick={() => go("budget")}>
-                View budget matrix
+                View budget plan
                 <ChevronRight size={15} />
               </Button>
             </div>
@@ -766,9 +789,9 @@ function Overview({ context, version, go, can }) {
                   <tr>
                     <th>Account / category</th>
                     <th>Group</th>
-                    <th className="numeric">Planned budget</th>
+                    <th className="numeric">Budget plan total</th>
                     <th className="numeric">Actual spending</th>
-                    <th>Base used</th>
+                    <th>Allocation used</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -845,7 +868,7 @@ function Budget({
     <>
       <div className="page-actions">
         <div className="inline-note">
-          <ShieldCheck size={16} /> Live adjustments update the plan. Expenses
+          <ShieldCheck size={16} /> Published changes update the plan. Expenses
           remain separate.
         </div>
         <div className="action-group">
@@ -856,7 +879,7 @@ function Budget({
               variant="dark"
               onClick={() => open({ kind: "adjustment" })}
             >
-              Add adjustment
+              Add budget change
             </Button>
           )}
         </div>
@@ -866,25 +889,25 @@ function Budget({
           <>
             <div className="stats-grid three budget-summary">
               <Stat
-                label="Opening allocation"
+                label="Starting allocation"
                 value={money(state.data.totals.base_amount)}
                 detail="Your approved starting budget"
                 icon={Wallet}
               />
               <Stat
-                label="Net adjustments"
+                label="Net budget changes"
                 value={money(state.data.totals.adjustments)}
                 detail={
                   mode === "draft"
-                    ? "Includes pending draft changes"
+                    ? "Includes proposals awaiting review"
                     : "Signed changes to the live plan"
                 }
                 icon={TrendingUp}
               />
               <Stat
-                label="Planned budget"
+                label="Budget plan total"
                 value={money(state.data.totals.planned_budget)}
-                detail="Opening allocation + adjustments"
+                detail="Starting allocation + adjustments"
                 icon={CircleDollarSign}
                 accent
               />
@@ -893,31 +916,31 @@ function Budget({
               <div className="card-header">
                 <div>
                   <div className="section-kicker">ALLOCATION BREAKDOWN</div>
-                  <h2>Department budget matrix</h2>
+                  <h2>Budget by account</h2>
                   <p>
                     {state.data.rows.length} accounts · Amounts in USD ·{" "}
                     {mode === "draft"
-                      ? "With pending draft overlays"
+                      ? "Including proposed changes"
                       : "Live budget"}
                   </p>
                 </div>
                 <Badge tone={mode === "draft" ? "amber" : "green"}>
-                  {mode === "draft" ? "Draft preview" : "Live"}
+                  {mode === "draft" ? "Proposal preview" : "Live"}
                 </Badge>
               </div>
               <div
                 className="table-scroll"
                 tabIndex={0}
                 role="region"
-                aria-label="Department budget matrix accounts"
+                aria-label="Budget plan accounts"
               >
                 <table>
                   <thead>
                     <tr>
                       <th>Banner account</th>
-                      <th className="numeric">Opening base</th>
+                      <th className="numeric">Starting allocation</th>
                       <th className="numeric">Adjustments</th>
-                      <th className="numeric">Planned budget</th>
+                      <th className="numeric">Budget plan total</th>
                       <th>Details</th>
                     </tr>
                   </thead>
@@ -972,7 +995,7 @@ function Budget({
                             </button>
                             {can("budgets", true) && !readOnly && (
                               <button
-                                aria-label={`Edit base for ${row.category_name}`}
+                                aria-label={`Edit allocation for ${row.category_name}`}
                                 onClick={() => open({ kind: "base", row })}
                               >
                                 <Pencil size={15} />
@@ -985,7 +1008,7 @@ function Budget({
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td>Total allocation</td>
+                      <td>Total budget</td>
                       <td className="numeric">
                         {exactMoney(state.data.totals.base_amount)}
                       </td>
@@ -1007,8 +1030,8 @@ function Budget({
       <section className="card section-gap">
         <div className="card-header">
           <div>
-            <h2>Live adjustments</h2>
-            <p>Signed changes to the opening budget</p>
+            <h2>Published changes</h2>
+            <p>Published updates to the starting allocation</p>
           </div>
           <SearchBox value={query} onChange={setQuery} />
         </div>
@@ -1122,10 +1145,10 @@ function FinancialTable({ data, kind, open, can, readOnly, confirm }) {
                       !commitment
                         ? () =>
                             confirm(
-                              `Remove this ${draft ? "draft" : expense ? "expense" : "adjustment"}?`,
+                              `Remove this ${draft ? "proposal" : expense ? "expense" : "budget change"}?`,
                               draft
                                 ? "Discarding removes the proposed change. The live budget is unaffected."
-                                : "The record will be removed from totals and retained in audit history.",
+                                : "The record will be removed from totals and retained in activity log.",
                               `/${draft ? "drafts" : expense ? "expenses" : "adjustments"}/${row.id}`,
                             )
                         : null
@@ -1153,8 +1176,8 @@ function FinancialTable({ data, kind, open, can, readOnly, confirm }) {
                           can("drafts", true) && (
                             <>
                               <button
-                                title="Stage an edit"
-                                aria-label="Stage an edit"
+                                title="Propose an edit"
+                                aria-label="Propose an edit"
                                 onClick={() =>
                                   open({
                                     kind: "draft",
@@ -1170,8 +1193,8 @@ function FinancialTable({ data, kind, open, can, readOnly, confirm }) {
                                 <Layers size={15} />
                               </button>
                               <button
-                                title="Stage a deletion"
-                                aria-label="Stage a deletion"
+                                title="Propose a removal"
+                                aria-label="Propose a removal"
                                 onClick={() =>
                                   open({
                                     kind: "draft",
@@ -1238,7 +1261,7 @@ function Records({
         <div className="stats-grid three">
           <Stat
             label={
-              kind === "draft" ? "Draft planned budget" : "Opening base budget"
+              kind === "draft" ? "Proposed budget total" : "Starting allocation"
             }
             value={money(
               matrixState.data.totals[
@@ -1247,13 +1270,13 @@ function Records({
             )}
             detail={
               kind === "draft"
-                ? "Includes pending create, edit, and delete overlays"
+                ? "Preview of proposed additions, edits, and removals"
                 : "The baseline used for expenditure balances"
             }
           />
           <Stat
             label={
-              kind === "draft" ? "Combined adjustments" : "Actual expenditures"
+              kind === "draft" ? "Combined budget changes" : "Recorded spending"
             }
             value={money(
               matrixState.data.totals[
@@ -1262,14 +1285,16 @@ function Records({
             )}
             detail={
               kind === "draft"
-                ? "Live changes with draft substitutions"
+                ? "Published changes with proposals applied for preview"
                 : "Non-deleted expense records"
             }
             icon={Receipt}
           />
           <Stat
             label={
-              kind === "draft" ? "Pending changes" : "Remaining base balance"
+              kind === "draft"
+                ? "Proposals awaiting review"
+                : "Unspent allocation"
             }
             value={
               kind === "draft"
@@ -1279,7 +1304,7 @@ function Records({
             detail={
               kind === "draft"
                 ? "Shared across this department workspace"
-                : "Opening base less actual expenses"
+                : "Starting allocation less actual expenses"
             }
             accent
             icon={Layers}
@@ -1289,7 +1314,7 @@ function Records({
       <div className="page-actions">
         <p className="inline-note">
           {kind === "draft"
-            ? "Drafts are shared within the department. Publishing applies all pending changes together."
+            ? "Proposals are shared within the department. Publishing applies all proposed changes together."
             : kind === "commitment"
               ? "Temporary allocations and existing owed commitments. Settling does not record spending."
               : "Only valid dates within the selected fiscal year are accepted."}
@@ -1301,7 +1326,7 @@ function Records({
               {kind === "expense"
                 ? "Record expense"
                 : kind === "draft"
-                  ? "New draft"
+                  ? "New proposal"
                   : "New commitment"}
             </Button>
           )}
@@ -1313,15 +1338,15 @@ function Records({
                 disabled={!state.data?.total}
                 onClick={() =>
                   confirm(
-                    "Publish all pending drafts?",
-                    "All pending drafts in this department and year will be checked against their live sources and applied in one transaction.",
+                    "Publish all proposed changes?",
+                    "All proposals for this department and year will be checked against the current records and published together.",
                     "/drafts/publish",
                     "POST",
                     context,
                   )
                 }
               >
-                Publish drafts
+                Publish changes
               </Button>
             )}
         </div>
@@ -1330,10 +1355,10 @@ function Records({
         <div className="card-header">
           <h2>
             {kind === "expense"
-              ? "Recorded expenditures"
+              ? "Expense records"
               : kind === "draft"
-                ? "Pending draft changes"
-                : "Open commitments"}
+                ? "Changes awaiting review"
+                : "Active commitments"}
           </h2>
           <SearchBox value={query} onChange={setQuery} />
         </div>
@@ -1352,17 +1377,17 @@ function Records({
       {kind === "expense" && matrixState.data && (
         <section className="card section-gap">
           <div className="card-header">
-            <h2>Balances by account</h2>
-            <small>Based on opening budget</small>
+            <h2>Unspent funds by account</h2>
+            <small>Based on starting allocation</small>
           </div>
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
                   <th>Category</th>
-                  <th className="numeric">Opening base</th>
+                  <th className="numeric">Starting allocation</th>
                   <th className="numeric">Actual expenses</th>
-                  <th className="numeric">Remaining base</th>
+                  <th className="numeric">Unspent allocation</th>
                 </tr>
               </thead>
               <tbody>
@@ -1412,7 +1437,7 @@ function Salaries({ context, version, open, can, readOnly, confirm }) {
               className={kind === x ? "selected" : ""}
               onClick={() => setKind(x)}
             >
-              {x === "faculty" ? "Faculty salaries" : "Staff salaries"}
+              {x === "faculty" ? "Faculty pay" : "Staff pay"}
             </button>
           ))}
         </div>
@@ -1422,7 +1447,7 @@ function Salaries({ context, version, open, can, readOnly, confirm }) {
             icon={Plus}
             onClick={() => open({ kind: "salary", salaryKind: kind })}
           >
-            Add appointment
+            Add pay record
           </Button>
         )}
       </div>
@@ -1431,27 +1456,27 @@ function Salaries({ context, version, open, can, readOnly, confirm }) {
           <>
             <div className="stats-grid three">
               <Stat
-                label="Previous salaries"
+                label="Prior pay total"
                 value={money(data.totals.previous_salary)}
-                detail="Department appointments before increases"
+                detail="Pay records before adjustments"
                 icon={Users}
               />
               <Stat
-                label="Salary increases"
+                label="Pay adjustments"
                 value={money(data.totals.salary_increase)}
                 detail="Signed changes to previous salaries"
                 icon={TrendingUp}
               />
               <Stat
-                label="New salary total"
+                label="Updated pay total"
                 value={money(data.totals.new_salary)}
-                detail="Previous salaries plus increases"
+                detail="Prior pay total plus increases"
                 accent
               />
             </div>
             <section className="card">
               <div className="card-header">
-                <h2>{kind === "faculty" ? "Faculty" : "Staff"} appointments</h2>
+                <h2>{kind === "faculty" ? "Faculty" : "Staff"} pay records</h2>
                 <SearchBox
                   value={query}
                   onChange={setQuery}
@@ -1464,9 +1489,9 @@ function Salaries({ context, version, open, can, readOnly, confirm }) {
                     <thead>
                       <tr>
                         <th>Name / UIN</th>
-                        <th className="numeric">Previous salary</th>
+                        <th className="numeric">Prior salary</th>
                         <th className="numeric">Increase</th>
-                        <th className="numeric">New salary</th>
+                        <th className="numeric">Updated salary</th>
                         <th>Origin</th>
                         <th />
                       </tr>
@@ -1493,7 +1518,7 @@ function Salaries({ context, version, open, can, readOnly, confirm }) {
                             <Badge>
                               {row.rolled_over_from_id
                                 ? "Rolled over"
-                                : "New appointment"}
+                                : "New pay record"}
                             </Badge>
                           </td>
                           <td>
@@ -1508,8 +1533,8 @@ function Salaries({ context, version, open, can, readOnly, confirm }) {
                                 }
                                 remove={() =>
                                   confirm(
-                                    "Remove this appointment?",
-                                    "The current-year appointment will be removed. Any rollover ledger will retain its source history.",
+                                    "Remove this pay record?",
+                                    "The current-year pay record will be removed. Its rollover history will be preserved.",
                                     `/salaries/${kind}/${row.id}`,
                                   )
                                 }
@@ -1522,7 +1547,7 @@ function Salaries({ context, version, open, can, readOnly, confirm }) {
                   </table>
                 </div>
               ) : (
-                <Empty title="No appointments found" />
+                <Empty title="No pay records found" />
               )}
               <Pagination data={data} page={page} setPage={setPage} />
             </section>
@@ -1554,13 +1579,13 @@ function Notes({ context, version, open, can, readOnly, mutate }) {
             className={resolved === "false" ? "selected" : ""}
             onClick={() => setResolved("false")}
           >
-            Open notes
+            Open discussions
           </button>
           <button
             className={resolved === "" ? "selected" : ""}
             onClick={() => setResolved("")}
           >
-            All notes
+            All discussions
           </button>
         </div>
         {!readOnly && can("notes", true) && (
@@ -1569,13 +1594,13 @@ function Notes({ context, version, open, can, readOnly, mutate }) {
             icon={Plus}
             onClick={() => open({ kind: "note" })}
           >
-            Add note
+            Start discussion
           </Button>
         )}
       </div>
       <section className="card">
         <div className="card-header">
-          <h2>Budget line conversations</h2>
+          <h2>Account discussions</h2>
           <SearchBox value={query} onChange={setQuery} />
         </div>
         <Status state={state}>
@@ -1610,7 +1635,9 @@ function Notes({ context, version, open, can, readOnly, mutate }) {
                           `/notes/${row.id}`,
                           "PATCH",
                           { is_resolved: !row.is_resolved },
-                          row.is_resolved ? "Note reopened" : "Note resolved",
+                          row.is_resolved
+                            ? "Discussion reopened"
+                            : "Discussion resolved",
                         ).catch(() => {})
                       }
                     >
@@ -1621,7 +1648,7 @@ function Notes({ context, version, open, can, readOnly, mutate }) {
               ))}
             </div>
           ) : (
-            <Empty title="No notes to show" />
+            <Empty title="No discussions to show" />
           )}
           <Pagination data={state.data} page={page} setPage={setPage} />
         </Status>
@@ -1648,7 +1675,7 @@ function Audit({ context, version, open, globalAllowed }) {
     <section className="card">
       <div className="card-header">
         <div>
-          <h2>Change history</h2>
+          <h2>Recorded activity</h2>
           <p>Before and after values are retained for review.</p>
         </div>
         <SearchBox value={query} onChange={setQuery} />
@@ -1667,7 +1694,7 @@ function Audit({ context, version, open, globalAllowed }) {
         <label>
           Account{" "}
           <input
-            aria-label="Filter audit by account"
+            aria-label="Filter activity by account"
             placeholder="All accounts"
             value={account}
             onChange={(e) => setAccount(e.target.value)}
@@ -1718,7 +1745,7 @@ function Audit({ context, version, open, globalAllowed }) {
             </table>
           </div>
         ) : (
-          <Empty title="No matching history" />
+          <Empty title="No matching activity" />
         )}
         <Pagination data={state.data} page={page} setPage={setPage} />
       </Status>
@@ -1780,7 +1807,7 @@ function Imports({ context, can, readOnly, refresh, notify }) {
       <section className="card">
         <div className="card-header">
           <div>
-            <h2>Bring your data into Ledger</h2>
+            <h2>Upload and review your records</h2>
             <p>Upload a CSV, review the preview, then commit.</p>
           </div>
           <Upload size={22} />
@@ -1788,7 +1815,7 @@ function Imports({ context, can, readOnly, refresh, notify }) {
         <div className="card-body">
           <div className="form-grid">
             <Field
-              label="Import type"
+              label="Record type"
               value={type}
               onChange={(e) => {
                 setType(e.target.value);
@@ -1796,11 +1823,11 @@ function Imports({ context, can, readOnly, refresh, notify }) {
                 setCsv("");
               }}
               options={[
-                { value: "adjustments", label: "Budget adjustments" },
+                { value: "adjustments", label: "Budget changes" },
                 ...(can("salaries", true)
                   ? [
-                      { value: "faculty_salaries", label: "Faculty salaries" },
-                      { value: "staff_salaries", label: "Staff salaries" },
+                      { value: "faculty_salaries", label: "Faculty pay" },
+                      { value: "staff_salaries", label: "Staff pay" },
                     ]
                   : []),
               ]}
@@ -1810,9 +1837,9 @@ function Imports({ context, can, readOnly, refresh, notify }) {
               value={mode}
               onChange={(e) => setMode(e.target.value)}
               options={[
-                { value: "active", label: "Active workspace" },
+                { value: "active", label: "Published budget" },
                 ...(type === "adjustments" && can("drafts", true)
-                  ? [{ value: "draft", label: "Draft workspace" }]
+                  ? [{ value: "draft", label: "Proposed changes" }]
                   : []),
               ]}
             />
@@ -1925,7 +1952,7 @@ function Imports({ context, can, readOnly, refresh, notify }) {
         <section className="card import-results">
           <div className="card-header">
             <div>
-              <h2>{preview.valid ? "Import preview" : "Validation issues"}</h2>
+              <h2>{preview.valid ? "Upload preview" : "Validation issues"}</h2>
               <p>
                 {preview.row_count} records{" "}
                 {preview.valid ? "validated" : "checked"}
@@ -2014,7 +2041,7 @@ function Archives({ meta, context, selectYear, can, confirm }) {
           <strong>A complete record, year after year.</strong>
           <p>
             Archived financial records are read-only. On rollover, the next
-            opening budget includes live adjustments, and salary totals carry
+            opening budget includes published changes, and salary totals carry
             forward with zero increase. Expenses and unspent balances are not
             copied.
           </p>
@@ -2022,7 +2049,7 @@ function Archives({ meta, context, selectYear, can, confirm }) {
       </div>
       <section className="card">
         <div className="card-header">
-          <h2>Fiscal years</h2>
+          <h2>Budget years</h2>
           <span className="muted">July 1 – June 30 · America/Chicago</span>
         </div>
         <div className="year-grid">
@@ -2055,14 +2082,14 @@ function Archives({ meta, context, selectYear, can, confirm }) {
                   onClick={() =>
                     confirm(
                       `Roll FY ${y.fiscal_year} into FY ${y.fiscal_year + 1}?`,
-                      "This archives the source year, expires pending drafts, and creates the next year’s budgets and salaries. This action affects all departments.",
+                      "This archives the current year, expires unpublished proposals, and creates the next year’s budgets and salaries. This action affects all departments.",
                       "/fiscal-years/rollover",
                       "POST",
                       { source_fiscal_year: y.fiscal_year },
                     )
                   }
                 >
-                  Roll over fiscal year
+                  Start next budget year
                 </Button>
               )}
             </article>
@@ -2091,7 +2118,14 @@ function Administration({ version, open, can }) {
               className={tab === x ? "selected" : ""}
               onClick={() => setTab(x)}
             >
-              {x.charAt(0).toUpperCase() + x.slice(1)}
+              {
+                {
+                  users: "Members",
+                  roles: "Access roles",
+                  departments: "Organization",
+                  accounts: "Account catalog",
+                }[x]
+              }
             </button>
           ))}
         </div>
@@ -2120,12 +2154,12 @@ function Administration({ version, open, can }) {
             <div className="card-header">
               <h2>
                 {tab === "users"
-                  ? "People & access"
+                  ? "Workspace members"
                   : tab === "roles"
-                    ? "Resource permissions"
+                    ? "Access rules"
                     : tab === "departments"
-                      ? "Department hierarchy"
-                      : "Banner accounts"}
+                      ? "Department structure"
+                      : "Account catalog"}
               </h2>
               {tab === "users" && (
                 <SearchBox
@@ -2219,7 +2253,9 @@ function Administration({ version, open, can }) {
                                 .filter(
                                   ([k, v]) => k !== "scope" && v !== "none",
                                 )
-                                .map(([k, v]) => `${k}: ${v}`)
+                                .map(
+                                  ([k, v]) => `${resourceLabels[k] || k}: ${v}`,
+                                )
                                 .join(" · ")}
                             </td>
                           </>
@@ -2298,18 +2334,18 @@ function LineDetail({ row, context, version, can, open, readOnly }) {
     <div className="modal-body">
       <div className="line-summary">
         <div>
-          <small>Opening base</small>
+          <small>Starting allocation</small>
           <strong>{exactMoney(row.base_amount)}</strong>
         </div>
         <div>
-          <small>Planned budget</small>
+          <small>Budget plan total</small>
           <strong>{exactMoney(row.planned_budget)}</strong>
         </div>
       </div>
       {can("notes") && (
         <>
           <div className="card-header compact">
-            <h3>Line notes</h3>
+            <h3>Account comments</h3>
             {!readOnly && can("notes", true) && (
               <Button
                 variant="small"
@@ -2321,7 +2357,7 @@ function LineDetail({ row, context, version, can, open, readOnly }) {
                   })
                 }
               >
-                Add note
+                Start discussion
               </Button>
             )}
           </div>
@@ -2336,14 +2372,14 @@ function LineDetail({ row, context, version, can, open, readOnly }) {
                 </div>
               ))
             ) : (
-              <p className="muted">No notes on this budget line.</p>
+              <p className="muted">No comments on this account yet.</p>
             )}
           </Status>
         </>
       )}
       {can("audit") && (
         <>
-          <h3>Recent line history</h3>
+          <h3>Recent account activity</h3>
           <Status state={history}>
             {history.data?.rows.length ? (
               history.data.rows.map((x) => (
@@ -2571,21 +2607,22 @@ function EditForm({ dialog, context, meta, onClose, onSaved }) {
             <div>
               <strong>
                 {values.draft_action === "create"
-                  ? "New proposed adjustment"
+                  ? "New budget proposal"
                   : values.draft_action === "update"
-                    ? "Proposed edit to a live adjustment"
-                    : "Proposed deletion of a live adjustment"}
+                    ? "Proposed edit to a published budget change"
+                    : "Proposed removal of a published budget change"}
               </strong>
               <p>
-                Pending changes do not affect the live budget until published.
+                Proposals awaiting review do not affect the live budget until
+                published.
               </p>
             </div>
           </div>
         )}
         {kind === "base" && (
           <div className="notice amber">
-            Changing the opening base changes expenditure balances. The change
-            will be recorded in audit history.
+            Changing the starting allocation changes expenditure balances. The
+            change will be recorded in activity log.
           </div>
         )}
         {[
@@ -2604,7 +2641,7 @@ function EditForm({ dialog, context, meta, onClose, onSaved }) {
             disabled: kind === "base",
           })}
         {kind === "base" &&
-          field("Opening base budget", "base_amount", {
+          field("Starting allocation", "base_amount", {
             type: "number",
             step: "0.01",
           })}
@@ -2618,7 +2655,7 @@ function EditForm({ dialog, context, meta, onClose, onSaved }) {
               })}
               {kind === "expense"
                 ? field("Expense date", "expense_date", { type: "date" })
-                : field("Adjustment type", "adjustment_type", {
+                : field("Change duration", "adjustment_type", {
                     options: [
                       { value: "permanent", label: "Permanent" },
                       { value: "temporary", label: "Temporary" },
@@ -2626,7 +2663,7 @@ function EditForm({ dialog, context, meta, onClose, onSaved }) {
                   })}
             </div>
             {kind !== "expense" &&
-              field("Commitment status", "obligation_status", {
+              field("Payment status", "obligation_status", {
                 options: [
                   { value: "none", label: "None" },
                   { value: "owed", label: "Owed" },
@@ -2660,24 +2697,24 @@ function EditForm({ dialog, context, meta, onClose, onSaved }) {
               required: salaryKind === "staff",
               disabled: !!row.id,
               help: row.id
-                ? "An existing appointment’s UIN is fixed."
+                ? "An existing pay record’s UIN is fixed."
                 : salaryKind === "faculty"
                   ? "Optional for legacy faculty identities."
                   : undefined,
             })}
             <div className="form-grid">
-              {field("Previous salary (USD)", "previous_salary", {
+              {field("Prior salary (USD)", "previous_salary", {
                 type: "number",
                 step: "0.01",
                 min: "0",
               })}
-              {field("Salary increase (USD)", "salary_increase", {
+              {field("Pay adjustment (USD)", "salary_increase", {
                 type: "number",
                 step: "0.01",
               })}
             </div>
             <div className="calculated">
-              <span>Calculated new salary</span>
+              <span>Calculated updated salary</span>
               <strong>
                 {exactMoney(
                   Number(values.previous_salary || 0) +
@@ -2769,9 +2806,7 @@ function EditForm({ dialog, context, meta, onClose, onSaved }) {
                 .map((key) => (
                   <Field
                     key={key}
-                    label={
-                      titles[key] || key.charAt(0).toUpperCase() + key.slice(1)
-                    }
+                    label={resourceLabels[key] || key}
                     value={values.permissions[key]}
                     onChange={(e) =>
                       setValues((v) => ({
@@ -2802,7 +2837,11 @@ function EditForm({ dialog, context, meta, onClose, onSaved }) {
           Cancel
         </Button>
         <Button variant="dark" type="submit" disabled={busy}>
-          {busy ? "Saving…" : kind === "draft" ? "Save draft" : "Save changes"}
+          {busy
+            ? "Saving…"
+            : kind === "draft"
+              ? "Save proposal"
+              : "Save changes"}
         </Button>
       </div>
     </form>
@@ -3070,7 +3109,7 @@ function App() {
                 </button>
                 <span>Workspace</span>
                 <ChevronRight size={14} />
-                <strong>{titles[page] || "Overview"}</strong>
+                <strong>{titles[page] || "Dashboard"}</strong>
               </div>
               <div className="topbar-right">
                 <span className="workspace-secure">
@@ -3245,10 +3284,10 @@ function App() {
               dialog.kind === "admin"
                 ? `${dialog.row ? "Edit" : "Add"} ${dialog.adminType.replace(/s$/, "")}`
                 : dialog.kind === "salary"
-                  ? `${dialog.row ? "Edit" : "Add"} ${dialog.salaryKind} appointment`
+                  ? `${dialog.row ? "Edit" : "Add"} ${dialog.salaryKind} pay record`
                   : dialog.kind === "base"
-                    ? "Edit opening budget"
-                    : `${dialog.row?.id ? "Edit" : "Add"} ${dialog.kind === "note" ? "budget line note" : dialog.kind}`
+                    ? "Edit starting allocation"
+                    : `${dialog.row?.id ? "Edit" : "Add"} ${{ note: "account discussion", draft: "change proposal", adjustment: "budget change", commitment: "commitment", expense: "expense" }[dialog.kind] || dialog.kind}`
             }
             subtitle={
               dialog.kind === "admin"
@@ -3282,7 +3321,7 @@ function App() {
       )}
       {dialog?.kind === "auditDetail" && (
         <Modal
-          title="Change details"
+          title="Activity details"
           subtitle={`${dialog.row.target_table} · ${dialog.row.action_type}`}
           onClose={() => setDialog(null)}
           wide
@@ -3350,17 +3389,17 @@ function App() {
           onClose={() => setDialog(null)}
         >
           <div className="modal-body help-copy">
-            <h3>Planned budget</h3>
+            <h3>Budget plan total</h3>
             <p>
-              Opening base plus non-deleted live adjustments. Draft preview
-              substitutes pending edits and adds proposed adjustments.
+              Starting allocation plus non-deleted published changes. Proposal
+              preview substitutes pending edits and adds proposed adjustments.
             </p>
-            <h3>Remaining base balance</h3>
+            <h3>Unspent allocation</h3>
             <p>
-              Opening base minus non-deleted actual expenses. A budget
+              Starting allocation minus non-deleted actual expenses. A budget
               adjustment does not itself create an expense.
             </p>
-            <h3>Fiscal years</h3>
+            <h3>Budget years</h3>
             <p>
               July 1 through June 30 in America/Chicago. Archived years are
               read-only.

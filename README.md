@@ -26,6 +26,8 @@ Seeded financial records and employee identities are **synthetic**, across five 
 
 ## Features
 
+The app uses product-facing labels: **Dashboard**, **Budget plan**, **Spending**, **Proposed changes**, **Commitments**, **People & pay**, **Data uploads**, **Discussions**, **Activity log**, **Budget years**, and **Workspace settings**. Section headings, forms, and help text use the same terminology. Existing API routes, CSV columns, database entities, and financial rules retain their original contracts.
+
 - Department dashboard, monthly spending, and workspace/year selection.
 - Budget matrix, opening base editing, signed live adjustments, optional logical source references, and CSV/XLSX export.
 - Shared draft creates, edits, and deletions; overlay preview; discard; atomic publishing with source-snapshot conflict checks.

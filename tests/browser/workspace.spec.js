@@ -5,21 +5,19 @@ async function signIn(page, role = "admin") {
   await page
     .getByRole("button", { name: "Open your workspace", exact: true })
     .click();
-  await page
-    .getByLabel("Demo account")
-    .selectOption({
-      label:
-        role === "admin"
-          ? "Alex Morgan · admin"
-          : role === "manager"
-            ? "Jordan Lee · manager"
-            : "Taylor Reed · reviewer",
-    });
+  await page.getByLabel("Demo account").selectOption({
+    label:
+      role === "admin"
+        ? "Alex Morgan · admin"
+        : role === "manager"
+          ? "Jordan Lee · manager"
+          : "Taylor Reed · reviewer",
+  });
   await page.getByRole("button", { name: "Enter demo workspace" }).click();
   await expect(
-    page.getByRole("heading", { name: "Overview", exact: true }),
+    page.getByRole("heading", { name: "Dashboard", exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("Budget at a glance")).toBeVisible();
+  await expect(page.getByText("Allocation overview")).toBeVisible();
 }
 test("landing, every workspace screen, and responsive navigation render without browser errors", async ({
   page,
@@ -40,16 +38,16 @@ test("landing, every workspace screen, and responsive navigation render without 
     fullPage: true,
   });
   for (const [label, heading] of [
-    ["Budget matrix", "Department budget matrix"],
-    ["Expenditures", "Recorded expenditures"],
-    ["Draft workspace", "Pending draft changes"],
-    ["Temporary board", "Open commitments"],
-    ["Faculty & staff", "Faculty appointments"],
-    ["Import data", "Bring your data into Ledger"],
-    ["Notes", "Budget line conversations"],
-    ["Audit history", "Change history"],
-    ["Fiscal years", "Fiscal years"],
-    ["Administration", "People & access"],
+    ["Budget plan", "Budget by account"],
+    ["Spending", "Expense records"],
+    ["Proposed changes", "Changes awaiting review"],
+    ["Commitments", "Active commitments"],
+    ["People & pay", "Faculty pay records"],
+    ["Data uploads", "Upload and review your records"],
+    ["Discussions", "Account discussions"],
+    ["Activity log", "Recorded activity"],
+    ["Budget years", "Budget years"],
+    ["Workspace settings", "Workspace members"],
   ]) {
     await page
       .getByRole("navigation")
@@ -63,9 +61,9 @@ test("landing, every workspace screen, and responsive navigation render without 
   }
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Overview", exact: true })
+    .getByRole("button", { name: "Dashboard", exact: true })
     .click();
-  await expect(page.getByText("Budget at a glance")).toBeVisible();
+  await expect(page.getByText("Allocation overview")).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page.getByRole("button", { name: "Open navigation" }),
@@ -83,10 +81,10 @@ test("landing, every workspace screen, and responsive navigation render without 
   await page.getByRole("button", { name: "Open navigation" }).click();
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Expenditures", exact: true })
+    .getByRole("button", { name: "Spending", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Expenditures", exact: true }),
+    page.getByRole("heading", { name: "Spending", exact: true }),
   ).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -96,7 +94,7 @@ test("record an expense, edit it, verify persistent data, and remove it through 
   await signIn(page);
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Expenditures", exact: true })
+    .getByRole("button", { name: "Spending", exact: true })
     .click();
   await page.getByRole("button", { name: "Record expense" }).click();
   await page.getByLabel("Amount (USD)").fill("321.45");
@@ -122,19 +120,17 @@ test("archived years hide mutation controls and the reviewer cannot navigate to 
   await expect(
     page
       .getByRole("navigation")
-      .getByRole("button", { name: "Administration" }),
+      .getByRole("button", { name: "Workspace settings" }),
   ).toHaveCount(0);
   await expect(
-    page
-      .getByRole("navigation")
-      .getByRole("button", { name: "Faculty & staff" }),
+    page.getByRole("navigation").getByRole("button", { name: "People & pay" }),
   ).toHaveCount(0);
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Budget matrix", exact: true })
+    .getByRole("button", { name: "Budget plan", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Add adjustment" }),
+    page.getByRole("button", { name: "Add budget change" }),
   ).toHaveCount(0);
   const options = await page
     .getByLabel("Fiscal year", { exact: true })
@@ -157,20 +153,22 @@ test("draft publishing, CSV import, and salary editing work through their review
     .selectOption({ label: "Biomedical Engineering" });
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Draft workspace", exact: true })
+    .getByRole("button", { name: "Proposed changes", exact: true })
     .click();
-  await page.getByRole("button", { name: "New draft" }).click();
+  await page.getByRole("button", { name: "New proposal" }).click();
   const description = `Browser draft ${Date.now()}`;
   await page.getByLabel("Amount (USD)").fill("12.34");
   await page.getByLabel("Description").fill(description);
-  await page.getByRole("button", { name: "Save draft", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Save proposal", exact: true })
+    .click();
   await expect(page.getByText(description, { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Publish drafts" }).click();
+  await page.getByRole("button", { name: "Publish changes" }).click();
   await page.getByRole("button", { name: "Confirm", exact: true }).click();
   await expect(page.getByText(description, { exact: true })).toHaveCount(0);
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Budget matrix", exact: true })
+    .getByRole("button", { name: "Budget plan", exact: true })
     .click();
   let row = page.getByRole("row").filter({ hasText: description });
   await expect(row).toBeVisible();
@@ -179,7 +177,7 @@ test("draft publishing, CSV import, and salary editing work through their review
   await expect(page.getByText(description, { exact: true })).toHaveCount(0);
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Import data", exact: true })
+    .getByRole("button", { name: "Data uploads", exact: true })
     .click();
   const imported = `Browser CSV ${Date.now()}`;
   await page
@@ -189,16 +187,16 @@ test("draft publishing, CSV import, and salary editing work through their review
     );
   await page.getByRole("button", { name: "Validate & preview" }).click();
   await expect(
-    page.getByRole("heading", { name: "Import preview" }),
+    page.getByRole("heading", { name: "Upload preview" }),
   ).toBeVisible();
   await page.getByRole("checkbox", { name: /I reviewed the preview/ }).check();
   await page.getByRole("button", { name: "Commit 1 records" }).click();
   await expect(
-    page.getByRole("heading", { name: "Import preview" }),
+    page.getByRole("heading", { name: "Upload preview" }),
   ).toHaveCount(0);
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Budget matrix", exact: true })
+    .getByRole("button", { name: "Budget plan", exact: true })
     .click();
   row = page.getByRole("row").filter({ hasText: imported });
   await expect(row).toBeVisible();
@@ -206,19 +204,19 @@ test("draft publishing, CSV import, and salary editing work through their review
   await page.getByRole("button", { name: "Confirm", exact: true }).click();
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Faculty & staff", exact: true })
+    .getByRole("button", { name: "People & pay", exact: true })
     .click();
-  await page.getByRole("button", { name: "Add appointment" }).click();
+  await page.getByRole("button", { name: "Add pay record" }).click();
   const name = `Browser Faculty ${Date.now()}`;
   await page.getByLabel("Full name").fill(name);
   await page.getByLabel("Nine-digit UIN").fill("980000001");
-  await page.getByLabel("Previous salary (USD)").fill("100000.00");
-  await page.getByLabel("Salary increase (USD)").fill("3000.00");
+  await page.getByLabel("Prior salary (USD)").fill("100000.00");
+  await page.getByLabel("Pay adjustment (USD)").fill("3000.00");
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   row = page.getByRole("row").filter({ hasText: name });
   await expect(row).toContainText("$103,000.00");
   await row.getByRole("button", { name: "Edit record" }).click();
-  await page.getByLabel("Salary increase (USD)").fill("3500.00");
+  await page.getByLabel("Pay adjustment (USD)").fill("3500.00");
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   await expect(row).toContainText("$103,500.00");
   await row.getByRole("button", { name: "Delete record" }).click();
