@@ -8,30 +8,7 @@ import Overview      from "./pages/Overview.jsx";
 import ForecastPage  from "./pages/ForecastPage.jsx";
 import AnomaliesPage from "./pages/AnomaliesPage.jsx";
 import ScenariosPage from "./pages/ScenariosPage.jsx";
-
-// ── AI placeholder ────────────────────────────────────────────────────────────
-function AIPlaceholder() {
-  return (
-    <div style={{
-      display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: "center", height: "60vh", gap: 16, color: C.textMuted,
-    }}>
-      <span style={{ fontSize: 48 }}>✦</span>
-      <div style={{ fontSize: 18, fontWeight: 700, color: C.text }}>AI Financial Assistant</div>
-      <div style={{ fontSize: 14, maxWidth: 420, textAlign: "center", lineHeight: 1.6 }}>
-        The Bedrock-powered chatbot will be built in Phase 4.
-        It will explain variances, answer natural-language budget questions,
-        and generate narrative financial summaries.
-      </div>
-      <div style={{
-        padding: "8px 16px", background: C.amberLight, borderRadius: 20,
-        fontSize: 12, fontWeight: 600, color: C.amber,
-      }}>
-        Coming in Phase 4 · Amazon Bedrock
-      </div>
-    </div>
-  );
-}
+import AIPage        from "./pages/AIPage.jsx";
 
 // ── Error banner ──────────────────────────────────────────────────────────────
 function ErrorBanner({ msg }) {
@@ -142,7 +119,7 @@ export default function App() {
 
       {tab === "scenarios" && <ScenariosPage />}
 
-      {tab === "ai" && <AIPlaceholder />}
+      {tab === "ai" && <AIPage filters={filters} />}
     </Shell>
   );
 }

@@ -6,7 +6,7 @@ const TABS = [
   { id: "forecast",  label: "Forecasting",     icon: "◉" },
   { id: "anomalies", label: "Anomalies",        icon: "⚑" },
   { id: "scenarios", label: "Scenario Planner", icon: "⇄" },
-  { id: "ai",        label: "AI Assistant",     icon: "✦", placeholder: true },
+  { id: "ai",        label: "AI Assistant",     icon: "✦" },
 ];
 
 export default function Shell({ activeTab, onTabChange, rowCount, children }) {

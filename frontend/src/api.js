@@ -45,4 +45,12 @@ export const api = {
     body: JSON.stringify(body),
   }).then(r => r.json()),
   scenarioPreset:   (id)           => get(`/api/scenarios/preset/${id}`),
+
+  // Phase 4 – Bedrock AI chat
+  chat: (question, filters = {}, history = []) =>
+    fetch(`${BASE}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, filters, history }),
+    }).then(r => r.json()),
 };
