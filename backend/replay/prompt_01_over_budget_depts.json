@@ -1,0 +1,309 @@
+{
+ "prompt": "Which departments are furthest over budget, and by how much?",
+ "tool_calls": [
+  {
+   "tool": "query_actuals",
+   "input": {
+    "dataset_id": "sample",
+    "entity_level": "department"
+   },
+   "result": {
+    "rows": [
+     {
+      "entity_level": "department",
+      "entity_name": "College of Architecture",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1797374.1899999997,
+      "total_budget": 1624505.4799999997,
+      "variance_usd": 172868.71,
+      "variance_pct_agg": 10.641312825857629,
+      "row_count": 75,
+      "dq_warnings": [
+       "2 record(s) in scope have |variance_pct| >= 50; variance_pct is capped at ±50 in the original source."
+      ]
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "Office of Research",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 2679957.1699999995,
+      "total_budget": 2483258.090000001,
+      "variance_usd": 196699.08000000007,
+      "variance_pct_agg": 7.9210083233836714,
+      "row_count": 52,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "Research Institute",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1099776.07,
+      "total_budget": 1038023.0600000003,
+      "variance_usd": 61753.00999999999,
+      "variance_pct_agg": 5.949098086510696,
+      "row_count": 36,
+      "dq_warnings": [
+       "1 record(s) in scope have |variance_pct| >= 50; variance_pct is capped at ±50 in the original source."
+      ]
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Pharmacy",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 2296855.4200000004,
+      "total_budget": 2172330.9099999997,
+      "variance_usd": 124524.50999999994,
+      "variance_pct_agg": 5.732299320824952,
+      "row_count": 85,
+      "dq_warnings": [
+       "2 record(s) in scope have |variance_pct| >= 50; variance_pct is capped at ±50 in the original source."
+      ]
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "IT Services",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 707803.8999999999,
+      "total_budget": 677691.75,
+      "variance_usd": 30112.149999999987,
+      "variance_pct_agg": 4.443340205926938,
+      "row_count": 36,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Liberal Arts & Sciences",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 711355.7200000001,
+      "total_budget": 688652.7500000001,
+      "variance_usd": 22702.97000000001,
+      "variance_pct_agg": 3.2967224773298165,
+      "row_count": 28,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Engineering",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 2857958.33,
+      "total_budget": 2789427.829999999,
+      "variance_usd": 68530.49999999999,
+      "variance_pct_agg": 2.4567941591089992,
+      "row_count": 81,
+      "dq_warnings": [
+       "1 record(s) in scope have |variance_pct| >= 50; variance_pct is capped at ±50 in the original source."
+      ]
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "Finance & Administration",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 342206.5400000001,
+      "total_budget": 335950.22,
+      "variance_usd": 6256.320000000003,
+      "variance_pct_agg": 1.8622759050433535,
+      "row_count": 36,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "Facilities Management",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 375401.67,
+      "total_budget": 369323.67999999993,
+      "variance_usd": 6077.99,
+      "variance_pct_agg": 1.6457081766324988,
+      "row_count": 36,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "Office of the Provost",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1998775.8100000005,
+      "total_budget": 1977467.9499999993,
+      "variance_usd": 21307.86,
+      "variance_pct_agg": 1.0775325081754827,
+      "row_count": 77,
+      "dq_warnings": [
+       "3 record(s) in scope have |variance_pct| >= 50; variance_pct is capped at ±50 in the original source."
+      ]
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Business",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 525885.61,
+      "total_budget": 523987.87,
+      "variance_usd": 1897.7399999999998,
+      "variance_pct_agg": 0.36217250601622286,
+      "row_count": 36,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "Student Affairs",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 2119543.1499999994,
+      "total_budget": 2123263.12,
+      "variance_usd": -3719.970000000001,
+      "variance_pct_agg": -0.17520061291323996,
+      "row_count": 71,
+      "dq_warnings": [
+       "2 record(s) in scope have |variance_pct| >= 50; variance_pct is capped at ±50 in the original source."
+      ]
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Applied Health Sciences",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 674419.7,
+      "total_budget": 702694.3299999998,
+      "variance_usd": -28274.63,
+      "variance_pct_agg": -4.023745289078951,
+      "row_count": 47,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Business Administration",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1138160.98,
+      "total_budget": 1192666.0899999999,
+      "variance_usd": -54505.11000000003,
+      "variance_pct_agg": -4.570022612112656,
+      "row_count": 40,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "University Library",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 2618048.4300000006,
+      "total_budget": 2772897.789999999,
+      "variance_usd": -154849.36,
+      "variance_pct_agg": -5.584387587542439,
+      "row_count": 91,
+      "dq_warnings": [
+       "2 record(s) in scope have |variance_pct| >= 50; variance_pct is capped at ±50 in the original source."
+      ]
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Medicine",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1275202.4099999997,
+      "total_budget": 1386621.44,
+      "variance_usd": -111419.03,
+      "variance_pct_agg": -8.035288275940712,
+      "row_count": 55,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "Graduate College",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1033549.6200000001,
+      "total_budget": 1130924.6300000001,
+      "variance_usd": -97375.01000000001,
+      "variance_pct_agg": -8.610212158877461,
+      "row_count": 59,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Urban Planning",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1031667.6799999999,
+      "total_budget": 1135076.38,
+      "variance_usd": -103408.69999999998,
+      "variance_pct_agg": -9.110285600339951,
+      "row_count": 69,
+      "dq_warnings": [
+       "3 record(s) in scope have |variance_pct| >= 50; variance_pct is capped at ±50 in the original source."
+      ]
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Nursing",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1139344.3099999998,
+      "total_budget": 1263212.3799999997,
+      "variance_usd": -123868.07,
+      "variance_pct_agg": -9.805799243354462,
+      "row_count": 44,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "School of Public Health",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1126224.1600000001,
+      "total_budget": 1262117.7999999998,
+      "variance_usd": -135893.63999999998,
+      "variance_pct_agg": -10.767112229936037,
+      "row_count": 41,
+      "dq_warnings": []
+     },
+     {
+      "entity_level": "department",
+      "entity_name": "College of Education",
+      "fiscal_year": null,
+      "fiscal_quarter": null,
+      "period_index": null,
+      "total_actual": 1367990.34,
+      "total_budget": 1536011.4900000002,
+      "variance_usd": -168021.1500000001,
+      "variance_pct_agg": -10.938795125809907,
+      "row_count": 52,
+      "dq_warnings": []
+     }
+    ],
+    "query_sql": "SELECT department, SUM(actual) AS total_actual, SUM(budget) AS total_budget, SUM(actual - budget) AS variance_usd, (SUM(actual) / NULLIF(SUM(budget), 0) - 1) * 100 AS variance_pct_agg, COUNT(*) AS row_count FROM budget_totals GROUP BY department ORDER BY variance_pct_agg DESC, department",
+    "entity_not_found": false
+   }
+  }
+ ],
+ "assistant_text": "The three departments furthest over budget across all fiscal years are College of Architecture at 10.6% over budget ($172,869), Office of Research at 7.9% over budget ($196,699), and Research Institute at 5.9% over budget ($61,753). Figures are actual spend against budget for rows included in totals.",
+ "grounding_check": "pass"
+}

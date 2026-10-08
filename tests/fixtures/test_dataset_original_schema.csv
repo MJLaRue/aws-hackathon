@@ -1,0 +1,61 @@
+record_id,department,budget_category,fiscal_year,fiscal_quarter,fund_source,report_type,budgeted_amount_usd,actual_spend_usd,forecasted_amount_usd,variance_usd,variance_pct,prior_year_spend_usd,yoy_change_pct,forecast_accuracy_pct,num_spreadsheet_versions,manual_adjustments_count,data_entry_errors,days_to_produce_report,approval_cycles,stakeholders_involved,confidence_score_1to5,anomaly_detected,anomaly_type,report_status
+BUD-00001,College of Pharmacy,Personnel & Salaries,FY2026,Q2,Grant,Annual,33616.41,35878.79,35088.7,2262.38,6.7,31020.54,15.7,97.8,4,2,1,21.3,2,7,4,1,Overrun,Draft
+BUD-00002,University Library,Travel & Conferences,FY2026,Q4,Grant,Mid-Year,41926.78,38560.06,39250.29,-3366.72,-8.0,31294.54,23.2,98.2,9,2,0,22.6,1,2,3,1,Underspend,Draft
+BUD-00005,College of Urban Planning,Professional Development,FY2024,Q1,State,Annual,4210.17,2370.33,2261.22,-1839.84,-43.7,2839.17,-16.5,95.4,6,5,0,27.2,1,3,5,0,,Draft
+BUD-00007,Student Affairs,Facility Maintenance,FY2025,Q1,State,Quarterly,53865.01,45494.39,45863.48,-8370.62,-15.5,41272.65,10.2,99.2,3,5,0,5.5,2,8,5,0,,Under Review
+BUD-00009,College of Business Administration,Student Aid & Scholarships,FY2024,Q1,Grant,Quarterly,20295.51,24107.01,23488.39,3811.5,18.8,19992.39,20.6,97.4,3,5,0,14.1,2,7,4,0,,Under Review
+BUD-00014,College of Architecture,Research Operations,FY2025,Q4,Auxiliary,Year-End,42290.63,40028.08,43587.19,-2262.55,-5.4,51141.2,-21.7,91.1,3,3,0,25.8,4,4,4,0,,Under Review
+BUD-00016,Office of Research,Consulting & Contracts,FY2024,Q3,Internal,Annual,17610.55,21011.15,22097.26,3400.6,19.3,22217.93,-5.4,94.8,4,3,0,16.8,5,4,5,0,,Finalized
+BUD-00018,Graduate College,Facility Maintenance,FY2025,Q3,Internal,Monthly,2000.0,2000.0,2056.27,0.0,-2.1,1721.29,16.2,97.2,10,5,0,12.8,4,4,4,0,,Finalized
+BUD-00019,Graduate College,Administrative Overhead,FY2026,Q1,Grant,Quarterly,13607.6,14756.08,14623.22,1148.48,8.4,17951.6,-17.8,99.1,5,4,0,9.6,3,8,5,0,,Draft
+BUD-00020,College of Education,Student Aid & Scholarships,FY2025,Q3,Internal,Mid-Year,6225.1,4999.38,5212.61,-1225.72,-19.7,4714.41,6.0,95.7,8,3,0,23.9,2,5,3,0,,Finalized
+BUD-00025,College of Engineering,Supplies & Materials,FY2024,Q2,Grant,Ad-Hoc,107651.37,133746.06,130375.56,26094.69,24.2,139039.33,-3.8,97.5,4,2,0,13.4,1,5,5,0,,Under Review
+BUD-00026,College of Medicine,Facility Maintenance,FY2025,Q1,Grant,Monthly,37479.98,45362.02,46450.79,7882.04,21.0,52408.31,-13.4,97.6,5,3,0,9.6,4,3,5,1,Underspend,Draft
+BUD-00033,School of Public Health,Administrative Overhead,FY2025,Q2,State,Year-End,37974.63,38202.48,37261.46,227.85,0.6,40217.21,-5.0,97.5,5,3,0,19.0,4,4,4,0,,Delayed
+BUD-00035,Office of the Provost,Research Operations,FY2026,Q4,Internal,Monthly,47227.43,43978.18,41086.99,-3249.25,-6.9,44898.04,-2.0,93.4,3,0,0,8.9,1,3,5,1,Overrun,Under Review
+BUD-00041,University Library,Research Operations,FY2024,Q4,Tuition,Mid-Year,66342.15,54619.49,53203.73,-11722.66,-17.7,44257.87,23.4,97.4,6,7,0,18.7,2,3,4,1,Misallocation,Draft
+BUD-00051,College of Urban Planning,Travel & Conferences,FY2024,Q2,Internal,Quarterly,35165.9,26754.22,29196.41,-8411.68,-23.9,20632.45,29.7,90.9,4,0,0,10.4,2,5,4,1,Overrun,Under Review
+BUD-00058,College of Nursing,Student Aid & Scholarships,FY2024,Q2,State,Quarterly,14185.46,12975.44,12471.08,-1210.02,-8.5,16598.54,-21.8,96.1,6,1,0,19.1,3,6,4,1,Forecast Deviation,Under Review
+BUD-00066,College of Liberal Arts & Sciences,Administrative Overhead,FY2026,Q3,State,Monthly,16313.8,14832.51,14466.26,-1481.29,-9.1,13090.01,13.3,97.5,5,2,0,8.1,3,2,4,1,YoY Spike,Draft
+BUD-00073,College of Pharmacy,Supplies & Materials,FY2024,Q4,Tuition,Monthly,102794.06,113793.02,111994.88,10998.96,10.7,123939.03,-8.2,98.4,5,3,0,7.7,4,8,5,1,Forecast Deviation,Draft
+BUD-00076,University Library,Equipment & Technology,FY2026,Q4,Internal,Quarterly,15593.92,17410.61,17624.73,1816.69,11.6,15784.2,10.3,98.8,5,2,0,14.5,3,6,4,0,,Under Review
+BUD-00081,College of Business Administration,Equipment & Technology,FY2024,Q3,Auxiliary,Annual,128385.59,99126.51,107240.0,-29259.08,-22.8,121728.06,-18.6,91.8,9,7,1,23.1,3,7,1,1,YoY Spike,Under Review
+BUD-00082,Graduate College,Professional Development,FY2026,Q3,Tuition,Year-End,122099.04,97667.02,88507.38,-24432.02,-20.0,118067.49,-17.3,90.6,4,2,0,27.0,3,8,4,1,Forecast Deviation,Draft
+BUD-00085,College of Urban Planning,Professional Development,FY2026,Q2,Foundation,Year-End,2958.06,2980.84,2821.9,22.78,0.8,2805.2,6.3,94.7,9,4,0,32.1,2,5,3,0,,Under Review
+BUD-00102,Graduate College,Professional Development,FY2025,Q4,Foundation,Ad-Hoc,145445.54,130319.2,125726.62,-15126.34,-10.4,106576.74,22.3,96.5,4,4,1,12.6,3,7,4,1,Underspend,Draft
+BUD-00104,School of Public Health,Facility Maintenance,FY2026,Q4,Grant,Year-End,128863.12,109366.13,107659.31,-19496.99,-15.1,127494.0,-14.2,98.4,7,3,0,28.3,2,2,4,0,,Under Review
+BUD-00106,College of Urban Planning,Consulting & Contracts,FY2026,Q2,Internal,Ad-Hoc,113002.65,118268.57,117612.51,5265.92,4.7,124864.44,-5.3,99.4,6,1,0,15.1,1,2,4,0,,Finalized
+BUD-00113,Office of Research,Administrative Overhead,FY2026,Q4,Foundation,Ad-Hoc,16785.27,17072.3,16709.61,287.03,1.7,17809.71,-4.1,97.9,6,1,0,7.6,2,5,4,0,,Under Review
+BUD-00114,School of Public Health,Administrative Overhead,FY2026,Q4,Internal,Mid-Year,10268.3,10441.83,11269.52,173.53,1.7,9022.06,15.7,92.1,8,3,0,23.0,1,6,4,0,,Draft
+BUD-00129,College of Education,Travel & Conferences,FY2024,Q4,Tuition,Monthly,84790.28,61829.07,59740.85,-22961.21,-27.1,62202.95,-0.6,96.6,2,7,0,9.3,2,8,5,0,,Under Review
+BUD-00136,College of Applied Health Sciences,Equipment & Technology,FY2024,Q3,Internal,Monthly,53760.99,60438.1,57825.31,6677.11,12.4,47712.24,26.7,95.7,5,1,0,4.2,4,3,4,0,,Delayed
+BUD-00143,College of Nursing,Equipment & Technology,FY2024,Q4,Grant,Year-End,4167.54,3885.4,3935.48,-282.14,-6.8,3512.68,10.6,98.7,5,4,1,25.9,4,4,5,0,,Finalized
+BUD-00146,Graduate College,Professional Development,FY2026,Q4,Auxiliary,Quarterly,36290.37,28448.02,27718.54,-7842.35,-21.6,27991.87,1.6,97.4,7,3,1,12.7,3,4,3,1,Misallocation,Draft
+BUD-00149,University Library,Professional Development,FY2025,Q2,State,Quarterly,30698.86,22686.46,22542.84,-8012.4,-26.1,28393.5,-20.1,99.4,9,2,0,21.6,5,7,4,0,,Draft
+BUD-00158,College of Medicine,Research Operations,FY2024,Q1,State,Year-End,15211.9,15733.67,14412.11,521.77,3.4,11639.35,35.2,91.6,6,2,0,23.4,2,4,4,1,Underspend,Under Review
+BUD-00162,College of Medicine,Travel & Conferences,FY2026,Q4,Auxiliary,Ad-Hoc,4464.75,3284.72,3597.27,-1180.03,-26.4,2946.67,11.5,90.5,11,3,3,15.9,3,7,2,0,,Draft
+BUD-00164,Office of Research,Supplies & Materials,FY2024,Q4,Grant,Year-End,2119.26,2241.54,2083.75,122.28,5.8,1814.34,23.5,93.0,8,4,0,20.4,3,6,4,0,,Draft
+BUD-00171,College of Urban Planning,Equipment & Technology,FY2025,Q1,State,Mid-Year,16273.78,17837.69,18457.15,1563.91,9.6,19225.04,-7.2,96.5,5,4,0,13.0,4,5,4,1,YoY Spike,Under Review
+BUD-00177,Office of the Provost,Facility Maintenance,FY2024,Q4,Tuition,Ad-Hoc,58204.3,64100.4,68078.77,5896.1,10.1,71357.04,-10.2,93.8,7,1,0,12.1,5,2,4,0,,Finalized
+BUD-00179,College of Pharmacy,Research Operations,FY2025,Q3,State,Quarterly,39466.82,43910.78,47057.71,4443.96,11.3,38833.59,13.1,92.8,7,5,1,15.4,4,8,4,1,Forecast Deviation,Under Review
+BUD-00181,College of Liberal Arts & Sciences,Administrative Overhead,FY2025,Q2,Foundation,Quarterly,160911.72,160927.81,157861.95,16.09,0.0,180592.51,-10.9,98.1,11,5,2,18.9,2,7,2,0,,Under Review
+BUD-00188,College of Liberal Arts & Sciences,Professional Development,FY2025,Q4,Internal,Year-End,7957.28,6687.3,6879.63,-1269.98,-16.0,6736.0,-0.7,97.1,8,3,2,28.2,3,4,2,0,,Finalized
+BUD-00189,Office of the Provost,Professional Development,FY2024,Q2,Foundation,Quarterly,43965.49,21982.74,19516.47,-21982.75,-50.0,26276.48,-16.3,88.8,6,4,0,17.5,4,4,4,0,,Under Review
+BUD-00195,College of Liberal Arts & Sciences,Consulting & Contracts,FY2026,Q3,Tuition,Quarterly,5535.56,5060.06,5335.89,-475.5,-8.6,4400.33,15.0,94.5,5,3,0,15.9,2,3,5,0,,Draft
+BUD-00205,College of Nursing,Equipment & Technology,FY2024,Q3,Foundation,Monthly,19120.9,17182.04,17024.4,-1938.86,-10.1,20115.42,-14.6,99.1,6,0,0,9.5,2,6,4,1,Forecast Deviation,Draft
+BUD-00206,College of Business Administration,Research Operations,FY2025,Q4,State,Year-End,17415.54,17307.56,17102.38,-107.98,-0.6,12261.31,41.2,98.8,10,1,1,23.5,5,3,2,0,,Draft
+BUD-00212,School of Public Health,Personnel & Salaries,FY2024,Q2,Internal,Monthly,13029.93,12520.46,12854.64,-509.47,-3.9,8937.68,40.1,97.3,7,2,0,15.7,4,8,4,0,,Draft
+BUD-00225,College of Education,Supplies & Materials,FY2026,Q2,Grant,Ad-Hoc,23731.71,19671.21,19571.79,-4060.5,-17.1,23038.19,-14.6,99.5,7,2,0,11.0,3,6,4,1,Forecast Deviation,Draft
+BUD-00228,College of Applied Health Sciences,Equipment & Technology,FY2024,Q3,Foundation,Ad-Hoc,13930.82,18242.41,19715.95,4311.59,31.0,23223.69,-21.4,91.9,6,1,0,15.8,4,6,4,0,,Draft
+BUD-00232,Office of the Provost,Supplies & Materials,FY2024,Q1,Foundation,Quarterly,202400.5,257918.96,257297.34,55518.46,27.4,312407.82,-17.4,99.8,5,5,0,14.5,1,5,5,0,,Draft
+BUD-00237,College of Urban Planning,Administrative Overhead,FY2026,Q4,Tuition,Mid-Year,97130.52,48565.26,49820.35,-48565.26,-50.0,47316.16,2.6,97.4,5,2,0,13.8,4,6,3,1,YoY Spike,Under Review
+BUD-00250,Office of the Provost,Student Aid & Scholarships,FY2024,Q2,Foundation,Quarterly,245394.31,222400.86,234056.1,-22993.45,-9.4,193671.43,14.8,94.8,5,2,1,14.8,5,2,4,1,Underspend,Draft
+BUD-00251,Graduate College,Facility Maintenance,FY2024,Q3,Auxiliary,Annual,44295.83,46851.7,43308.0,2555.87,5.8,48422.45,-3.2,92.4,4,2,0,22.1,4,8,5,0,,Draft
+BUD-00255,College of Engineering,Professional Development,FY2026,Q4,Auxiliary,Monthly,172173.55,180610.05,172027.36,8436.5,4.9,206233.07,-12.4,95.2,5,2,0,9.8,2,5,4,0,,Draft
+BUD-00262,College of Pharmacy,Student Aid & Scholarships,FY2026,Q2,Grant,Annual,14222.35,12289.53,12229.05,-1932.82,-13.6,13641.24,-9.9,99.5,7,2,0,22.2,2,4,3,1,Forecast Deviation,Draft
+BUD-00269,Graduate College,Professional Development,FY2024,Q3,Foundation,Mid-Year,3345.65,2399.17,2457.76,-946.48,-28.3,3014.62,-20.4,97.6,6,3,0,21.1,2,3,4,0,,Draft
+BUD-00274,College of Pharmacy,Consulting & Contracts,FY2025,Q2,Foundation,Quarterly,32218.93,41568.86,42086.02,9349.93,29.0,30958.12,34.3,98.8,8,1,2,22.3,3,7,2,0,,Under Review
+BUD-00279,College of Business Administration,Equipment & Technology,FY2025,Q4,Internal,Monthly,35007.47,44298.45,44089.75,9290.98,26.5,33682.37,31.5,99.5,11,2,0,11.5,3,6,4,0,,Draft
+BUD-00281,Student Affairs,Supplies & Materials,FY2026,Q4,Internal,Ad-Hoc,389686.14,435630.14,382905.12,45944.0,11.8,466918.87,-6.7,87.9,4,3,0,9.3,2,5,4,1,Misallocation,Under Review
+BUD-00288,College of Applied Health Sciences,Facility Maintenance,FY2024,Q1,Tuition,Year-End,80815.0,97479.05,94628.94,16664.05,20.6,107252.28,-9.1,97.1,2,3,0,25.8,3,4,4,1,Forecast Deviation,Draft
+BUD-00295,Office of Research,Personnel & Salaries,FY2024,Q3,Auxiliary,Ad-Hoc,4453.74,4477.34,4276.4,23.6,0.5,3240.68,38.2,95.5,4,1,0,12.9,2,5,4,0,,Draft

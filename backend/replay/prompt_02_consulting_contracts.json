@@ -1,0 +1,453 @@
+{
+ "prompt": "Why is Consulting & Contracts over budget?",
+ "tool_calls": [
+  {
+   "tool": "explain_variance",
+   "input": {
+    "dataset_id": "sample",
+    "entity_level": "category",
+    "entity_name": "Consulting & Contracts"
+   },
+   "result": {
+    "entity_level": "category",
+    "entity_name": "Consulting & Contracts",
+    "entity_not_found": false,
+    "period_description": "all periods",
+    "total_variance_usd": 441856.2899999996,
+    "total_variance_pct": 12.671449933985791,
+    "top_department_contributors": [
+     {
+      "entity_type": "department",
+      "entity_name": "Office of Research",
+      "variance_usd": 174296.92000000016,
+      "variance_pct_agg": 15.939460948997786,
+      "share_of_total_variance": 0.3936180002817933
+     },
+     {
+      "entity_type": "department",
+      "entity_name": "University Library",
+      "variance_usd": 51491.92999999999,
+      "variance_pct_agg": 17.187529884703,
+      "share_of_total_variance": 0.11628519033641019
+     },
+     {
+      "entity_type": "department",
+      "entity_name": "College of Medicine",
+      "variance_usd": 50451.419999999984,
+      "variance_pct_agg": 17.530735605099835,
+      "share_of_total_variance": 0.11393538710710922
+     },
+     {
+      "entity_type": "department",
+      "entity_name": "College of Engineering",
+      "variance_usd": 39552.97,
+      "variance_pct_agg": 18.649962898555273,
+      "share_of_total_variance": 0.08932321326507518
+     },
+     {
+      "entity_type": "department",
+      "entity_name": "College of Architecture",
+      "variance_usd": 27738.48999999999,
+      "variance_pct_agg": 17.969997540165995,
+      "share_of_total_variance": 0.0626423517101536
+     }
+    ],
+    "top_category_contributors": [
+     {
+      "entity_type": "category",
+      "entity_name": "Consulting & Contracts",
+      "variance_usd": 441856.29000000004,
+      "variance_pct_agg": 12.671449933985791,
+      "share_of_total_variance": 1.0
+     }
+    ],
+    "top_record_contributors": [
+     {
+      "record_id": "M-000187",
+      "department": "Office of Research",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q4",
+      "variance_usd": 44687.19,
+      "variance_pct": 15.66,
+      "is_persistent_pattern": true
+     },
+     {
+      "record_id": "M-000188",
+      "department": "Office of Research",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q4",
+      "variance_usd": 44647.04000000004,
+      "variance_pct": 15.66,
+      "is_persistent_pattern": true
+     },
+     {
+      "record_id": "M-000186",
+      "department": "Office of Research",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q4",
+      "variance_usd": 44159.06,
+      "variance_pct": 15.66,
+      "is_persistent_pattern": true
+     },
+     {
+      "record_id": "M-000639",
+      "department": "College of Medicine",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2025",
+      "fiscal_quarter": "Q2",
+      "variance_usd": 33677.56000000001,
+      "variance_pct": 47.01,
+      "is_persistent_pattern": true
+     },
+     {
+      "record_id": "M-000611",
+      "department": "Office of Research",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2024",
+      "fiscal_quarter": "Q1",
+      "variance_usd": 12769.619999999995,
+      "variance_pct": 16.74,
+      "is_persistent_pattern": true
+     },
+     {
+      "record_id": "M-000609",
+      "department": "Office of Research",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2024",
+      "fiscal_quarter": "Q1",
+      "variance_usd": 12385.660000000003,
+      "variance_pct": 16.74,
+      "is_persistent_pattern": true
+     },
+     {
+      "record_id": "M-000610",
+      "department": "Office of Research",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2024",
+      "fiscal_quarter": "Q1",
+      "variance_usd": 12247.75,
+      "variance_pct": 16.74,
+      "is_persistent_pattern": true
+     },
+     {
+      "record_id": "M-000325",
+      "department": "University Library",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2025",
+      "fiscal_quarter": "Q1",
+      "variance_usd": 10910.270000000004,
+      "variance_pct": 15.05,
+      "is_persistent_pattern": true
+     },
+     {
+      "record_id": "M-000327",
+      "department": "University Library",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2025",
+      "fiscal_quarter": "Q1",
+      "variance_usd": 10894.0,
+      "variance_pct": 15.05,
+      "is_persistent_pattern": true
+     },
+     {
+      "record_id": "M-000154",
+      "department": "College of Engineering",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2024",
+      "fiscal_quarter": "Q1",
+      "variance_usd": 10600.61,
+      "variance_pct": 18.99,
+      "is_persistent_pattern": true
+     }
+    ],
+    "persistent_pattern_share": 0.9582703881017655,
+    "one_time_outlier_share": 0.09849727895163918,
+    "fund_source_split": [
+     {
+      "fund_source": "Auxiliary",
+      "variance_usd": 239021.68000000017,
+      "variance_pct_agg": 16.56376110295885,
+      "share_of_total_variance": 0.5409489135030761
+     },
+     {
+      "fund_source": "Grant",
+      "variance_usd": 85086.05000000005,
+      "variance_pct_agg": 12.379547874548003,
+      "share_of_total_variance": 0.19256498532588506
+     },
+     {
+      "fund_source": "Foundation",
+      "variance_usd": 64258.919999999984,
+      "variance_pct_agg": 15.839082080927525,
+      "share_of_total_variance": 0.1454294562605411
+     },
+     {
+      "fund_source": "State",
+      "variance_usd": 32661.599999999977,
+      "variance_pct_agg": 4.761248357406056,
+      "share_of_total_variance": 0.07391905635200975
+     },
+     {
+      "fund_source": "Tuition",
+      "variance_usd": 10533.809999999998,
+      "variance_pct_agg": 11.650470296405512,
+      "share_of_total_variance": 0.023839900525123213
+     },
+     {
+      "fund_source": "Internal",
+      "variance_usd": 10294.229999999981,
+      "variance_pct_agg": 5.896940127001904,
+      "share_of_total_variance": 0.023297688033364825
+     }
+    ],
+    "dq_warnings": [],
+    "quarterly_time_series": [
+     {
+      "period_index": 1,
+      "fiscal_year": "FY2024",
+      "fiscal_quarter": "Q1",
+      "actual": 709008.43,
+      "budget": 616569.08,
+      "variance_pct_agg": 14.992537413650409
+     },
+     {
+      "period_index": 2,
+      "fiscal_year": "FY2024",
+      "fiscal_quarter": "Q2",
+      "actual": 163838.74,
+      "budget": 143758.69,
+      "variance_pct_agg": 13.967886045706157
+     },
+     {
+      "period_index": 3,
+      "fiscal_year": "FY2024",
+      "fiscal_quarter": "Q3",
+      "actual": 314015.36,
+      "budget": 280575.87,
+      "variance_pct_agg": 11.918163169199115
+     },
+     {
+      "period_index": 4,
+      "fiscal_year": "FY2024",
+      "fiscal_quarter": "Q4",
+      "actual": 72434.7,
+      "budget": 70004.32,
+      "variance_pct_agg": 3.471757171557388
+     },
+     {
+      "period_index": 5,
+      "fiscal_year": "FY2025",
+      "fiscal_quarter": "Q1",
+      "actual": 283739.96,
+      "budget": 255649.76,
+      "variance_pct_agg": 10.987767013745685
+     },
+     {
+      "period_index": 6,
+      "fiscal_year": "FY2025",
+      "fiscal_quarter": "Q2",
+      "actual": 409294.23,
+      "budget": 333186.52999999997,
+      "variance_pct_agg": 22.842370008175305
+     },
+     {
+      "period_index": 7,
+      "fiscal_year": "FY2025",
+      "fiscal_quarter": "Q3",
+      "actual": 583834.7,
+      "budget": 552295.3200000001,
+      "variance_pct_agg": 5.710600625766649
+     },
+     {
+      "period_index": 8,
+      "fiscal_year": "FY2025",
+      "fiscal_quarter": "Q4",
+      "actual": 41808.07,
+      "budget": 42899.59,
+      "variance_pct_agg": -2.5443599810627493
+     },
+     {
+      "period_index": 9,
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q1",
+      "actual": 83149.54000000001,
+      "budget": 72757.89,
+      "variance_pct_agg": 14.282505993508066
+     },
+     {
+      "period_index": 10,
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q2",
+      "actual": 169598.96,
+      "budget": 158855.3,
+      "variance_pct_agg": 6.76317378142246
+     },
+     {
+      "period_index": 11,
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q3",
+      "actual": 53038.12,
+      "budget": 51357.1,
+      "variance_pct_agg": 3.2731988371617726
+     },
+     {
+      "period_index": 12,
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q4",
+      "actual": 1045117.8200000001,
+      "budget": 909112.89,
+      "variance_pct_agg": 14.960180577793825
+     }
+    ]
+   }
+  },
+  {
+   "tool": "detect_anomalies",
+   "input": {
+    "dataset_id": "sample",
+    "entity_level": "category",
+    "entity_name": "Consulting & Contracts"
+   },
+   "result": {
+    "anomalies": [
+     {
+      "record_id": "S-011042",
+      "source_record_id": null,
+      "is_synthetic": true,
+      "department": "College of Business",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q3",
+      "period_index": 11,
+      "actual": 19825.7,
+      "budget": 15040.19,
+      "variance_pct": 31.82,
+      "peer_group": "category",
+      "peer_median": 8.14,
+      "peer_mad": 9.149999999999999,
+      "z_score": 1.7455912568306011,
+      "detector_reason": "abs_floor",
+      "severity": "medium",
+      "source_anomaly_flag": 1,
+      "source_anomaly_type": "Overrun"
+     },
+     {
+      "record_id": "M-000639",
+      "source_record_id": "BUD-00241",
+      "is_synthetic": false,
+      "department": "College of Medicine",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2025",
+      "fiscal_quarter": "Q2",
+      "period_index": 6,
+      "actual": 105316.71,
+      "budget": 71639.15,
+      "variance_pct": 47.01,
+      "peer_group": "category",
+      "peer_median": 8.14,
+      "peer_mad": 9.149999999999999,
+      "z_score": 2.865334972677596,
+      "detector_reason": "both",
+      "severity": "high",
+      "source_anomaly_flag": 1,
+      "source_anomaly_type": "Overrun"
+     },
+     {
+      "record_id": "M-000773",
+      "source_record_id": "BUD-00293",
+      "is_synthetic": false,
+      "department": "Office of the Provost",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q1",
+      "period_index": 9,
+      "actual": 12985.0,
+      "budget": 9909.19,
+      "variance_pct": 31.04,
+      "peer_group": "category",
+      "peer_median": 8.14,
+      "peer_mad": 9.149999999999999,
+      "z_score": 1.6880928961748636,
+      "detector_reason": "abs_floor",
+      "severity": "medium",
+      "source_anomaly_flag": 1,
+      "source_anomaly_type": "Overrun"
+     },
+     {
+      "record_id": "M-000774",
+      "source_record_id": "BUD-00293",
+      "is_synthetic": false,
+      "department": "Office of the Provost",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q1",
+      "period_index": 9,
+      "actual": 12906.75,
+      "budget": 9849.47,
+      "variance_pct": 31.04,
+      "peer_group": "category",
+      "peer_median": 8.14,
+      "peer_mad": 9.149999999999999,
+      "z_score": 1.6880928961748636,
+      "detector_reason": "abs_floor",
+      "severity": "medium",
+      "source_anomaly_flag": 1,
+      "source_anomaly_type": "Overrun"
+     },
+     {
+      "record_id": "M-000775",
+      "source_record_id": "BUD-00293",
+      "is_synthetic": false,
+      "department": "Office of the Provost",
+      "category": "Consulting & Contracts",
+      "fiscal_year": "FY2026",
+      "fiscal_quarter": "Q1",
+      "period_index": 9,
+      "actual": 12266.34,
+      "budget": 9360.76,
+      "variance_pct": 31.04,
+      "peer_group": "category",
+      "peer_median": 8.14,
+      "peer_mad": 9.149999999999999,
+      "z_score": 1.6880928961748636,
+      "detector_reason": "abs_floor",
+      "severity": "medium",
+      "source_anomaly_flag": 1,
+      "source_anomaly_type": "Overrun"
+     }
+    ],
+    "persistent_patterns": [
+     {
+      "entity_type": "category",
+      "entity_name": "Consulting & Contracts",
+      "direction": "over",
+      "qualifying_years": [
+       "FY2024",
+       "FY2025",
+       "FY2026"
+      ],
+      "per_year_variance": {
+       "FY2024": 13.357476527578394,
+       "FY2025": 11.37180844558825,
+       "FY2026": 13.323001503972232
+      }
+     }
+    ],
+    "confusion_matrix": {
+     "tp": 5,
+     "fp": 7,
+     "fn": 0,
+     "tn": 103
+    },
+    "total_records_scanned": 115,
+    "sensitivity_used": 2.5,
+    "entity_not_found": false
+   }
+  }
+ ],
+ "assistant_text": "Consulting & Contracts is 12.7% over budget overall ($441,856). The overrun is a persistent pattern: it is over budget in every fiscal year, with FY2024 at 13.4%, FY2025 at 11.4%, and FY2026 at 13.3%. The largest contributor is Office of Research at $174,297. The data shows where the overrun sits but not why it happens. One hypothesis is recurring contract commitments that are under-budgeted, and that cannot be confirmed from this dataset.",
+ "grounding_check": "pass"
+}

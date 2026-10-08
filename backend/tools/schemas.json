@@ -1,0 +1,293 @@
+[
+  {
+    "name": "list_entities",
+    "description": "Returns all departments, categories, fund sources, fiscal periods, and dataset metadata for the active dataset. Call this first in any session before referencing entity names.",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "description": "UUID of the active dataset"
+          }
+        },
+        "required": [
+          "dataset_id"
+        ]
+      }
+    }
+  },
+  {
+    "name": "query_actuals",
+    "description": "Query budget, actual, and variance data. Aggregates over any combination of dimensions. All arithmetic is precomputed — never compute these numbers yourself.",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string"
+          },
+          "entity_level": {
+            "type": "string",
+            "enum": [
+              "total",
+              "department",
+              "category",
+              "fund_source",
+              "dept_x_category"
+            ],
+            "description": "Grouping level for the result"
+          },
+          "entity_name": {
+            "type": "string",
+            "description": "Filter to a specific entity (e.g. 'College of Architecture'). Omit for all entities at this level."
+          },
+          "fiscal_year": {
+            "type": "string",
+            "description": "Optional filter, e.g. 'FY2024'. Omit for all years."
+          },
+          "fiscal_quarter": {
+            "type": "string",
+            "description": "Optional filter, e.g. 'Q3'. Omit for all quarters."
+          },
+          "period_index_from": {
+            "type": "integer",
+            "description": "Inclusive start period index (1–12)"
+          },
+          "period_index_to": {
+            "type": "integer",
+            "description": "Inclusive end period index (1–12)"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "entity_level"
+        ]
+      }
+    }
+  },
+  {
+    "name": "run_forecast",
+    "description": "Returns the FY2027 forecast for a supported entity level. Refuses Department × Category combinations. Returns point forecast, 80% and 95% prediction intervals in both ratio and dollar terms, selected model, CV error, and confidence label.",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string"
+          },
+          "entity_level": {
+            "type": "string",
+            "enum": [
+              "total",
+              "department",
+              "category",
+              "fund_source"
+            ],
+            "description": "dept_x_category is NOT permitted for forecasting"
+          },
+          "entity_name": {
+            "type": "string",
+            "description": "Entity name; omit or use 'total' for the aggregate total."
+          },
+          "horizon": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 1,
+            "maximum": 8,
+            "description": "Number of quarters to forecast ahead"
+          },
+          "planned_budget_total": {
+            "type": "number",
+            "description": "Optional: the planned total budget for the entity for the forecast period. If provided, used to compute dollar forecast fields. If omitted, dollar fields are computed from SUM(budget) in the most recent fiscal year (FY2026) in the dataset."
+          },
+          "force_recompute": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "dataset_id",
+          "entity_level"
+        ]
+      }
+    }
+  },
+  {
+    "name": "detect_anomalies",
+    "description": "Runs anomaly detection and persistent pattern detection on the specified entity. A row is flagged when its modified Z-score (median/MAD within its category peer group) exceeds the sensitivity OR its |variance_pct| is at least the absolute floor (30). Source anomaly flags are returned alongside but are NOT the detection ground truth.",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string"
+          },
+          "entity_level": {
+            "type": "string",
+            "enum": [
+              "total",
+              "department",
+              "category",
+              "fund_source",
+              "dept_x_category"
+            ]
+          },
+          "entity_name": {
+            "type": "string",
+            "description": "Filter to a specific entity. Omit to run across all entities at this level."
+          },
+          "sensitivity": {
+            "type": "number",
+            "default": 2.5,
+            "minimum": 1.0,
+            "maximum": 5.0,
+            "description": "Modified Z-score threshold. Higher = fewer flags."
+          }
+        },
+        "required": [
+          "dataset_id",
+          "entity_level"
+        ]
+      }
+    }
+  },
+  {
+    "name": "compare_periods",
+    "description": "Compares actual and budget figures for an entity across two fiscal periods. All delta arithmetic is pre-computed — never compute these numbers yourself.",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string"
+          },
+          "entity_level": {
+            "type": "string",
+            "enum": [
+              "total",
+              "department",
+              "category",
+              "fund_source"
+            ]
+          },
+          "entity_name": {
+            "type": "string"
+          },
+          "period_a": {
+            "type": "object",
+            "properties": {
+              "fiscal_year": {
+                "type": "string"
+              },
+              "fiscal_quarter": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "fiscal_year",
+              "fiscal_quarter"
+            ]
+          },
+          "period_b": {
+            "type": "object",
+            "properties": {
+              "fiscal_year": {
+                "type": "string"
+              },
+              "fiscal_quarter": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "fiscal_year",
+              "fiscal_quarter"
+            ]
+          }
+        },
+        "required": [
+          "dataset_id",
+          "entity_level",
+          "period_a",
+          "period_b"
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain_variance",
+    "description": "Returns a structured variance decomposition for the specified entity and period or period range. All figures are precomputed. The LLM generates narrative from this structure — it must not introduce any numbers not present in this response.",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string"
+          },
+          "entity_level": {
+            "type": "string",
+            "enum": [
+              "total",
+              "department",
+              "category",
+              "fund_source"
+            ]
+          },
+          "entity_name": {
+            "type": "string"
+          },
+          "fiscal_year": {
+            "type": "string",
+            "description": "Optional; omit for all years"
+          },
+          "fiscal_quarter": {
+            "type": "string",
+            "description": "Optional"
+          },
+          "period_index_from": {
+            "type": "integer"
+          },
+          "period_index_to": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "entity_level"
+        ]
+      }
+    }
+  },
+  {
+    "name": "get_reporting_health",
+    "description": "Returns reporting process health statistics (spreadsheet versions, manual adjustments, data entry errors, days to produce, approval cycles). DESCRIPTIVE ONLY — do not imply causal relationships to budget variance.",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string"
+          },
+          "grouping": {
+            "type": "string",
+            "enum": [
+              "total",
+              "department",
+              "report_type",
+              "report_status"
+            ],
+            "description": "Dimension to group statistics by"
+          },
+          "entity_name": {
+            "type": "string",
+            "description": "Filter to a specific entity within the grouping. Omit for all."
+          }
+        },
+        "required": [
+          "dataset_id",
+          "grouping"
+        ]
+      }
+    }
+  }
+]

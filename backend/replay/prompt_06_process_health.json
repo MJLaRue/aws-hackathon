@@ -1,0 +1,277 @@
+{
+ "prompt": "How long do reports take to produce, and where are the errors?",
+ "tool_calls": [
+  {
+   "tool": "get_reporting_health",
+   "input": {
+    "dataset_id": "sample",
+    "grouping": "total"
+   },
+   "result": {
+    "grouping": "total",
+    "rows": [
+     {
+      "group_value": null,
+      "avg_spreadsheet_versions": 5.287081339712919,
+      "avg_manual_adjustments": 2.382775119617225,
+      "avg_data_entry_errors": 0.291866028708134,
+      "avg_days_to_produce": 16.597368421052625,
+      "avg_approval_cycles": 2.6555023923444976,
+      "pct_with_errors": 0.22966507177033493,
+      "pct_delayed": 0.07655502392344497,
+      "row_count": 418
+     }
+    ],
+    "descriptive_note": "These statistics describe observed reporting process characteristics. No causal relationship between process metrics and budget variance is implied or supported by this data.",
+    "dq_note": null
+   }
+  },
+  {
+   "tool": "get_reporting_health",
+   "input": {
+    "dataset_id": "sample",
+    "grouping": "department"
+   },
+   "result": {
+    "grouping": "department",
+    "rows": [
+     {
+      "group_value": "College of Applied Health Sciences",
+      "avg_spreadsheet_versions": 6.352941176470588,
+      "avg_manual_adjustments": 2.7058823529411766,
+      "avg_data_entry_errors": 0.5294117647058824,
+      "avg_days_to_produce": 17.129411764705882,
+      "avg_approval_cycles": 3.0,
+      "pct_with_errors": 0.5294117647058824,
+      "pct_delayed": 0.23529411764705882,
+      "row_count": 17
+     },
+     {
+      "group_value": "College of Architecture",
+      "avg_spreadsheet_versions": 5.037037037037037,
+      "avg_manual_adjustments": 2.3703703703703702,
+      "avg_data_entry_errors": 0.25925925925925924,
+      "avg_days_to_produce": 17.392592592592592,
+      "avg_approval_cycles": 2.6296296296296298,
+      "pct_with_errors": 0.2222222222222222,
+      "pct_delayed": 0.07407407407407407,
+      "row_count": 27
+     },
+     {
+      "group_value": "College of Business",
+      "avg_spreadsheet_versions": 3.0,
+      "avg_manual_adjustments": 1.0,
+      "avg_data_entry_errors": 0.0,
+      "avg_days_to_produce": 14.0,
+      "avg_approval_cycles": 2.0,
+      "pct_with_errors": 0.0,
+      "pct_delayed": 0.08333333333333333,
+      "row_count": 12
+     },
+     {
+      "group_value": "College of Business Administration",
+      "avg_spreadsheet_versions": 6.8125,
+      "avg_manual_adjustments": 3.125,
+      "avg_data_entry_errors": 0.4375,
+      "avg_days_to_produce": 16.75625,
+      "avg_approval_cycles": 2.8125,
+      "pct_with_errors": 0.3125,
+      "pct_delayed": 0.0625,
+      "row_count": 16
+     },
+     {
+      "group_value": "College of Education",
+      "avg_spreadsheet_versions": 6.0,
+      "avg_manual_adjustments": 3.1,
+      "avg_data_entry_errors": 0.3,
+      "avg_days_to_produce": 18.265,
+      "avg_approval_cycles": 3.15,
+      "pct_with_errors": 0.25,
+      "pct_delayed": 0.1,
+      "row_count": 20
+     },
+     {
+      "group_value": "College of Engineering",
+      "avg_spreadsheet_versions": 4.758620689655173,
+      "avg_manual_adjustments": 2.1379310344827585,
+      "avg_data_entry_errors": 0.3103448275862069,
+      "avg_days_to_produce": 16.16551724137931,
+      "avg_approval_cycles": 2.413793103448276,
+      "pct_with_errors": 0.27586206896551724,
+      "pct_delayed": 0.0,
+      "row_count": 29
+     },
+     {
+      "group_value": "College of Liberal Arts & Sciences",
+      "avg_spreadsheet_versions": 7.0,
+      "avg_manual_adjustments": 3.1,
+      "avg_data_entry_errors": 0.4,
+      "avg_days_to_produce": 21.57,
+      "avg_approval_cycles": 2.3,
+      "pct_with_errors": 0.2,
+      "pct_delayed": 0.1,
+      "row_count": 10
+     },
+     {
+      "group_value": "College of Medicine",
+      "avg_spreadsheet_versions": 6.380952380952381,
+      "avg_manual_adjustments": 3.0476190476190474,
+      "avg_data_entry_errors": 0.38095238095238093,
+      "avg_days_to_produce": 17.51904761904762,
+      "avg_approval_cycles": 2.7142857142857144,
+      "pct_with_errors": 0.23809523809523808,
+      "pct_delayed": 0.09523809523809523,
+      "row_count": 21
+     },
+     {
+      "group_value": "College of Nursing",
+      "avg_spreadsheet_versions": 6.5,
+      "avg_manual_adjustments": 2.4444444444444446,
+      "avg_data_entry_errors": 0.3888888888888889,
+      "avg_days_to_produce": 18.433333333333334,
+      "avg_approval_cycles": 2.6666666666666665,
+      "pct_with_errors": 0.3333333333333333,
+      "pct_delayed": 0.05555555555555555,
+      "row_count": 18
+     },
+     {
+      "group_value": "College of Pharmacy",
+      "avg_spreadsheet_versions": 4.935483870967742,
+      "avg_manual_adjustments": 2.2580645161290325,
+      "avg_data_entry_errors": 0.3870967741935484,
+      "avg_days_to_produce": 14.899999999999997,
+      "avg_approval_cycles": 2.6129032258064515,
+      "pct_with_errors": 0.3225806451612903,
+      "pct_delayed": 0.0967741935483871,
+      "row_count": 31
+     },
+     {
+      "group_value": "College of Urban Planning",
+      "avg_spreadsheet_versions": 6.222222222222222,
+      "avg_manual_adjustments": 2.814814814814815,
+      "avg_data_entry_errors": 0.2222222222222222,
+      "avg_days_to_produce": 17.66296296296296,
+      "avg_approval_cycles": 2.5555555555555554,
+      "pct_with_errors": 0.2222222222222222,
+      "pct_delayed": 0.07407407407407407,
+      "row_count": 27
+     },
+     {
+      "group_value": "Facilities Management",
+      "avg_spreadsheet_versions": 3.0,
+      "avg_manual_adjustments": 1.0,
+      "avg_data_entry_errors": 0.0,
+      "avg_days_to_produce": 14.0,
+      "avg_approval_cycles": 2.0,
+      "pct_with_errors": 0.0,
+      "pct_delayed": 0.0,
+      "row_count": 12
+     },
+     {
+      "group_value": "Finance & Administration",
+      "avg_spreadsheet_versions": 3.0,
+      "avg_manual_adjustments": 1.0,
+      "avg_data_entry_errors": 0.0,
+      "avg_days_to_produce": 14.0,
+      "avg_approval_cycles": 2.0,
+      "pct_with_errors": 0.0,
+      "pct_delayed": 0.0,
+      "row_count": 12
+     },
+     {
+      "group_value": "Graduate College",
+      "avg_spreadsheet_versions": 6.0,
+      "avg_manual_adjustments": 3.0,
+      "avg_data_entry_errors": 0.5652173913043478,
+      "avg_days_to_produce": 16.756521739130438,
+      "avg_approval_cycles": 3.3043478260869565,
+      "pct_with_errors": 0.391304347826087,
+      "pct_delayed": 0.13043478260869565,
+      "row_count": 23
+     },
+     {
+      "group_value": "IT Services",
+      "avg_spreadsheet_versions": 3.0,
+      "avg_manual_adjustments": 1.0,
+      "avg_data_entry_errors": 0.0,
+      "avg_days_to_produce": 14.0,
+      "avg_approval_cycles": 2.0,
+      "pct_with_errors": 0.0,
+      "pct_delayed": 0.08333333333333333,
+      "row_count": 12
+     },
+     {
+      "group_value": "Office of Research",
+      "avg_spreadsheet_versions": 5.722222222222222,
+      "avg_manual_adjustments": 2.9444444444444446,
+      "avg_data_entry_errors": 0.2222222222222222,
+      "avg_days_to_produce": 15.261111111111111,
+      "avg_approval_cycles": 3.0,
+      "pct_with_errors": 0.2222222222222222,
+      "pct_delayed": 0.0,
+      "row_count": 18
+     },
+     {
+      "group_value": "Office of the Provost",
+      "avg_spreadsheet_versions": 5.851851851851852,
+      "avg_manual_adjustments": 2.7777777777777777,
+      "avg_data_entry_errors": 0.5185185185185185,
+      "avg_days_to_produce": 18.103703703703705,
+      "avg_approval_cycles": 2.962962962962963,
+      "pct_with_errors": 0.3333333333333333,
+      "pct_delayed": 0.07407407407407407,
+      "row_count": 27
+     },
+     {
+      "group_value": "Research Institute",
+      "avg_spreadsheet_versions": 3.0,
+      "avg_manual_adjustments": 1.0,
+      "avg_data_entry_errors": 0.0,
+      "avg_days_to_produce": 14.0,
+      "avg_approval_cycles": 2.0,
+      "pct_with_errors": 0.0,
+      "pct_delayed": 0.16666666666666666,
+      "row_count": 12
+     },
+     {
+      "group_value": "School of Public Health",
+      "avg_spreadsheet_versions": 5.9411764705882355,
+      "avg_manual_adjustments": 3.2941176470588234,
+      "avg_data_entry_errors": 0.11764705882352941,
+      "avg_days_to_produce": 17.58235294117647,
+      "avg_approval_cycles": 3.411764705882353,
+      "pct_with_errors": 0.11764705882352941,
+      "pct_delayed": 0.11764705882352941,
+      "row_count": 17
+     },
+     {
+      "group_value": "Student Affairs",
+      "avg_spreadsheet_versions": 4.730769230769231,
+      "avg_manual_adjustments": 1.9230769230769231,
+      "avg_data_entry_errors": 0.15384615384615385,
+      "avg_days_to_produce": 15.461538461538462,
+      "avg_approval_cycles": 2.423076923076923,
+      "pct_with_errors": 0.11538461538461539,
+      "pct_delayed": 0.038461538461538464,
+      "row_count": 26
+     },
+     {
+      "group_value": "University Library",
+      "avg_spreadsheet_versions": 4.967741935483871,
+      "avg_manual_adjustments": 2.064516129032258,
+      "avg_data_entry_errors": 0.3225806451612903,
+      "avg_days_to_produce": 17.11935483870968,
+      "avg_approval_cycles": 2.6129032258064515,
+      "pct_with_errors": 0.22580645161290322,
+      "pct_delayed": 0.06451612903225806,
+      "row_count": 31
+     }
+    ],
+    "descriptive_note": "These statistics describe observed reporting process characteristics. No causal relationship between process metrics and budget variance is implied or supported by this data.",
+    "dq_note": null
+   }
+  }
+ ],
+ "assistant_text": "Across all reports, the average time to produce is 16.6 days, with 5.3 spreadsheet versions and 2.4 manual adjustments on average. Average data entry errors are 0.29 per report, and 23.0% of reports have at least one error. The highest department average is Graduate College at 0.57. These are descriptive statistics only. They do not show that process characteristics cause any budget variance.",
+ "grounding_check": "pass"
+}
