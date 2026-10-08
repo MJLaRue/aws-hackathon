@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import "@fontsource-variable/dm-sans";
-import "@fontsource-variable/manrope";
 import {
   LayoutDashboard,
   Table2,
@@ -362,8 +360,8 @@ function Chart({ monthly }) {
         >
           <defs>
             <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#d5a03c" stopOpacity=".22" />
-              <stop offset="100%" stopColor="#d5a03c" stopOpacity="0" />
+              <stop offset="0%" stopColor="#2563eb" stopOpacity=".22" />
+              <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
             </linearGradient>
           </defs>
           {[20, 95, 178].map((y) => (
@@ -373,7 +371,7 @@ function Chart({ monthly }) {
               y1={y}
               x2={w}
               y2={y}
-              stroke="#eae6df"
+              stroke="#e2e8f0"
               strokeDasharray="5 5"
             />
           ))}
@@ -384,7 +382,7 @@ function Chart({ monthly }) {
           <polyline
             points={points}
             fill="none"
-            stroke="#c58b24"
+            stroke="#2563eb"
             strokeWidth="3"
             strokeLinejoin="round"
           />
@@ -394,7 +392,7 @@ function Chart({ monthly }) {
               cx={24 + (i * (w - 48)) / 11}
               cy={h - 12 - (v / max) * (h - 32)}
               r="4"
-              fill="#c58b24"
+              fill="#2563eb"
               stroke="white"
               strokeWidth="2"
             >
@@ -414,7 +412,7 @@ function Chart({ monthly }) {
   );
 }
 
-function Landing({ onSignIn, config }) {
+function Landing({ onSignIn }) {
   return (
     <div className="landing">
       <header className="landing-nav">
@@ -422,10 +420,10 @@ function Landing({ onSignIn, config }) {
           <Brand />
         </a>
         <nav>
-          <a href="#workspace">The workspace</a>
-          <a href="#foundation">Built for your department</a>
+          <a href="#workspace">How it works</a>
+          <a href="#foundation">Features</a>
           <Button onClick={onSignIn} variant="dark">
-            Open workspace
+            Open workspace <ChevronRight size={16} />
           </Button>
         </nav>
       </header>
@@ -433,7 +431,8 @@ function Landing({ onSignIn, config }) {
         <section className="hero">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span className="uic-mark">UIC</span> A BETTER VIEW OF YOUR BUDGET
+              <span className="uic-mark">UIC</span> YOUR DEPARTMENT. ONE SHARED
+              PLAN.
             </div>
             <h1>
               A clearer picture
@@ -447,97 +446,93 @@ function Landing({ onSignIn, config }) {
             </p>
             <div className="hero-actions">
               <Button onClick={onSignIn} variant="dark">
-                Open your workspace
+                Open your workspace <ChevronRight size={18} />
               </Button>
               <a href="#workspace">
-                Explore the workspace <ChevronDown size={16} />
+                See how it works <ChevronDown size={17} />
               </a>
             </div>
             <div className="hero-foot">
-              <ShieldCheck size={17} /> Department access. Clear history.
+              <ShieldCheck size={16} /> Department access. Clear history.
               Confident planning.
             </div>
           </div>
-          <div className="hero-preview" id="workspace">
-            <div className="preview-top">
-              <span className="mini-mark">L</span>
-              <span>Department overview</span>
-              <Badge>FY 2027</Badge>
+        </section>
+        <div className="landing-pillars">
+          {[
+            [Wallet, "Plan with clarity", "Budgets & live adjustments"],
+            [Receipt, "Track every expense", "Actual spending, in view"],
+            [Layers, "Review together", "Drafts, notes & audit history"],
+          ].map(([Icon, title, detail]) => (
+            <div key={title}>
+              <Icon size={23} />
+              <strong>{title}</strong>
+              <span>{detail}</span>
             </div>
-            <div className="preview-body">
-              <div className="preview-label">YOUR BUDGET, CONNECTED</div>
-              <h2>Everything adds up.</h2>
-              <div className="preview-stats">
-                <div>
-                  <small>Opening budget</small>
-                  <strong>Plan</strong>
-                </div>
-                <Plus size={20} />
-                <div>
-                  <small>Live adjustments</small>
-                  <strong>Refine</strong>
-                </div>
-              </div>
-              <div className="preview-bars">
-                {[42, 62, 50, 78, 64, 90, 74, 98, 83, 110, 95, 126].map(
-                  (h, i) => (
-                    <span key={i} style={{ height: h }} />
-                  ),
-                )}
-              </div>
-              <div className="preview-caption">
-                Illustrative workspace preview
-              </div>
-              <div className="preview-row">
-                <span>
-                  <Table2 size={17} /> Budget matrix
-                </span>
-                <CheckCircle2 size={17} />
-              </div>
-              <div className="preview-row">
-                <span>
-                  <Receipt size={17} /> Actual expenditures
-                </span>
-                <CheckCircle2 size={17} />
-              </div>
-              <div className="preview-row">
-                <span>
-                  <Users size={17} /> Faculty & staff planning
-                </span>
-                <CheckCircle2 size={17} />
-              </div>
-            </div>
-            <div className="preview-note">
-              <Layers size={20} />
-              <div>
-                <strong>Room to work things out.</strong>
-                <small>
-                  Stage changes. Review the impact. Publish when ready.
-                </small>
-              </div>
-            </div>
+          ))}
+        </div>
+        <section className="landing-process" id="workspace">
+          <div className="section-kicker">HOW IT WORKS</div>
+          <h2>From spreadsheets to a shared plan.</h2>
+          <p className="landing-section-sub">
+            A clear process for the work your department does every day.
+          </p>
+          <div className="process-grid">
+            {[
+              [
+                Upload,
+                "Bring your data",
+                "Import budget and salary records. Preview and validate the data before committing.",
+              ],
+              [
+                Table2,
+                "Build your budget",
+                "Set opening allocations and track adjustments across Banner accounts.",
+              ],
+              [
+                Layers,
+                "Review changes",
+                "Stage changes in a draft workspace and publish when the plan is ready.",
+              ],
+              [
+                History,
+                "Keep the context",
+                "Follow actual spending, add notes, and trace changes through audit history.",
+              ],
+            ].map(([Icon, title, text], index) => (
+              <article key={title}>
+                <span className="step-number">{index + 1}</span>
+                <Icon size={25} />
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </article>
+            ))}
           </div>
         </section>
         <section className="foundation" id="foundation">
           <div>
-            <div className="eyebrow">FROM SPREADSHEETS TO A SHARED PLAN</div>
-            <h2>
-              The details matter.
-              <br />
-              So does the bigger picture.
-            </h2>
+            <div className="eyebrow">BUILT FOR DEPARTMENT FINANCE</div>
+            <h2>Every detail. A clearer bigger picture.</h2>
+            <p className="landing-section-sub">
+              The tools to manage today’s budget and prepare for the year ahead.
+            </p>
           </div>
           <div className="foundation-grid">
             {[
               [
-                Table2,
+                Wallet,
                 "A budget you can follow",
                 "See opening balances, signed adjustments, and planned totals by Banner account.",
               ],
               [
-                Layers,
+                MessageSquare,
                 "Changes with context",
-                "Draft changes, keep notes, and trace updates through a clear audit history.",
+                "Review drafts, keep notes, and trace updates through a clear audit history.",
+              ],
+              [
+                Users,
+                "People and planning",
+                "Manage faculty and staff appointments alongside your department’s financial records.",
               ],
               [
                 Archive,
@@ -546,7 +541,9 @@ function Landing({ onSignIn, config }) {
               ],
             ].map(([Icon, title, text]) => (
               <article key={title}>
-                <Icon size={25} />
+                <span className="feature-icon">
+                  <Icon size={24} />
+                </span>
                 <h3>{title}</h3>
                 <p>{text}</p>
               </article>
@@ -554,15 +551,16 @@ function Landing({ onSignIn, config }) {
           </div>
         </section>
         <section className="landing-ai">
-          <Sparkles size={27} />
-          <div>
-            <h3>A foundation for financial intelligence.</h3>
-            <p>
-              Reliable, structured records for the forecasting and scenario
-              tools to come.
-            </p>
-          </div>
+          <Sparkles size={28} />
           <Badge tone="outline">AI layer · Next phase</Badge>
+          <h2>A foundation for financial intelligence.</h2>
+          <p>
+            Reliable, structured records for the forecasting and scenario tools
+            to come.
+          </p>
+          <Button onClick={onSignIn} variant="cta-white">
+            Open workspace <ChevronRight size={17} />
+          </Button>
         </section>
       </main>
       <footer>
@@ -2980,7 +2978,7 @@ function App() {
                   setInApp(false);
                 }}
               >
-                <Brand light />
+                <Brand />
               </a>
               <button
                 className="mobile-close icon-button"
