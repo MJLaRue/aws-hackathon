@@ -1,12 +1,97 @@
-# Technical Design Mechanical Review
-**Document reviewed:** `docs/technical-design.md` (Revision 2)
-**Reference documents:** `docs/requirements.md` (APPROVED), `docs/design.md`, `tests/ground_truth.md`, `docs/assumption-challenger-findings.md`
+# Technical Design Mechanical Review — Revision 4
+**Document reviewed:** `docs/technical-design.md` (Revision 4)
+**Reference documents:** `docs/requirements.md` (APPROVED), `docs/design.md`, `tests/ground_truth.md`
+**Previous review:** `docs/design-review.md` (Revision 3, findings NEW-01 through NEW-04 + field-name NIT)
 **Review date:** 2026-10-08
-**Reviewer role:** mechanical-reviewer
+**Reviewer role:** mechanical-reviewer (fresh read, no context from prior reviews)
 
 ---
 
-## 1. Section Coverage Checklist
+## 1. Revision 3 Finding Resolution
+
+Each of the 5 findings from the Revision 3 review is checked below. The quoted text is the exact text required by the prior review; the confirmation is based on a direct search of the Revision 4 document.
+
+### NEW-01 — `anomaly_results` DDL storage location
+
+**Required fix:** §3.2 DDL block for `anomaly_results`/`anomaly_run_summary` must be followed by the sentence specifying `.ddb` storage at `/data/dbs/{dataset_id}.ddb` and explaining the `dataset_id` column.
+
+**Status: ✅ RESOLVED**
+
+The following sentence appears in §3.2 immediately after the DDL block (line 426):
+
+> "Both `anomaly_results` and `anomaly_run_summary` are stored within the dataset's own `.ddb` file at `/data/dbs/{dataset_id}.ddb`. The `dataset_id` column in `anomaly_results` is retained for cross-validation queries and is always equal to the containing file's dataset UUID."
+
+Both requirements are satisfied: storage path and `dataset_id` rationale are present.
+
+---
+
+### NEW-02 — `KpiResponse.source_flag_disagreement_count` comment and `GET /kpis` description
+
+**Required fix:** `KpiResponse.source_flag_disagreement_count` comment must read "count of rows where detector and source disagree (FP + FN from confusion matrix)"; `GET /kpis` description must say it aggregates `fp + fn`.
+
+**Status: ✅ RESOLVED**
+
+The Pydantic model in §3.7 now reads:
+
+```python
+source_flag_disagreement_count: int  # count of rows where detector and source disagree (FP + FN from confusion matrix)
+```
+
+The note immediately after the model definition states:
+
+> "The `source_flag_disagreement_count` field is computed as `fp + fn` from the `anomaly_run_summary` table for the most recent `run_id` (by `computed_at`) for this `dataset_id`."
+
+Both required elements are present verbatim.
+
+---
+
+### NEW-03 — §3.6 OLS sentence references only `explain_variance`
+
+**Required fix:** §3.6 OLS sentence must NOT say "or `query_actuals`"; must say "from the `explain_variance` response" and include "No additional API call is required for the fallback trend line."
+
+**Status: ✅ RESOLVED**
+
+§3.6 now reads:
+
+> "For STL-ineligible entities, `TrendChart.tsx` renders the raw quarterly spend-vs-budget ratio data points connected by a line, overlaid with an OLS regression line computed client-side from the `quarterly_time_series` array in the `explain_variance` response. No additional API call is required for the fallback trend line."
+
+The phrase "or `query_actuals`" is absent. The required sentence "No additional API call is required for the fallback trend line." is present verbatim.
+
+---
+
+### NEW-04 — §5.5 confidence table rows merged
+
+**Required fix:** The two rows (`< 8 quarters` and `< 9 quarters (no CV folds possible)`) must be merged into one row with the combined label `Entity has < 9 quarters of history (< 8: cannot model; 8 exactly: no CV folds)`.
+
+**Status: ✅ RESOLVED**
+
+§5.5 table first row now reads:
+
+| Condition | Label |
+|---|---|
+| Entity has < 9 quarters of history (< 8: cannot model; 8 exactly: no CV folds) | Low |
+
+The blockquote note (CLAS + Travel & Conferences) is placed after this row. The previously separate `< 8 quarters → Low` row is gone.
+
+---
+
+### Field-name NIT — §2.5 test must use `report.rows_unmapped_period`
+
+**Required fix:** §2.5 unit test must use `report.rows_unmapped_period`, not `report.unmapped_periods`.
+
+**Status: ✅ RESOLVED**
+
+§2.5 test now contains:
+
+```python
+assert report.rows_unmapped_period == 1
+```
+
+This matches the `ValidationReport` Pydantic model field `rows_unmapped_period: int` defined in §2.6.
+
+---
+
+## 2. Section Coverage Checklist
 
 | Required Section | Present | Location |
 |---|---|---|
@@ -27,262 +112,127 @@ All 12 required sections are present.
 
 ---
 
-## 2. Assumption-Challenger Findings Response Audit
-
-All nine findings from `docs/assumption-challenger-findings.md` are reviewed here:
-
-| Finding | Severity | Addressed? | Assessment |
-|---|---|---|---|
-| FINDING-01: `ValidationReport` Pydantic model never defined | HIGH | **PARTIAL** | Appendix C logs it as unresolved (it is not in the Revision 1 responses table). The design still lacks a `class ValidationReport(BaseModel)` definition with the fields required by R1-05. |
-| FINDING-02: `stl_note` dual-use for semantically unrelated failures | HIGH | **NO** | Appendix B still reads: "sets `stl_note` to include: 'Dollar forecast unavailable…'". No `dollar_forecast_available: bool` field has been added to `RunForecastResponse`. The `stl_note` field in §6 Tool 3 is still the single vehicle for both STL unavailability and dollar unavailability. |
-| FINDING-03: `anomaly_results` DDL never specified | MEDIUM | **NO** | No `CREATE TABLE anomaly_results` DDL appears anywhere in the design. `KpiResponse.anomaly_count` still reads "count from most recent detect_anomalies run (stored in anomaly_results)" with no schema defined. |
-| FINDING-04: R2-07 "total actual vs budget by fiscal year" absent from `KpiResponse` | MEDIUM | **NO** | `KpiResponse` in §3.7 still lacks a `fiscal_year_summary: list[FiscalYearSummary]` field. The three-year breakdown (FY2024 −1.0%, FY2025 −2.6%, FY2026 −3.1%) required by R2-07 cannot be returned in a single `GET /kpis` call. |
-| FINDING-05: R2-05 plain trend line for STL-ineligible entities unspecified | MEDIUM | **NO** | §3.6 still only specifies the unavailability note. No fallback computation method (OLS overlay, raw data points) is described for `TrendChart.tsx`. |
-| FINDING-06: R1-05 derived-column reconciliation missing from validation report | MEDIUM | **NO** | §2.6 still covers only the BUD-00018 special case. No row-by-row SQL reconciliation of `variance_usd`, `yoy_change_pct`, and `forecast_accuracy_pct` is specified for arbitrary uploads. |
-| FINDING-07: Confidence label table redundant overlap | NIT | **PARTIAL** | The table in §5.5 still contains both "< 8 quarters" and "< 9 quarters" rows plus named-entity rows (CLAS and T&C). No consolidation was made. Harmless but creates implementation ambiguity. |
-| FINDING-08: `ColumnMappingProposal` / `ColumnMappingRequest` schemas undefined | NIT | **NO** | §2.3 still names these classes without providing field definitions. |
-| FINDING-09: Abbreviated-dollar tolerance contradicts bare-dollar tolerance for forecast fields | NIT | **NO** | §6 Tool 3 grounding note still reads "bare-dollar tolerance rule (exact ± $1)". §7.1 Step 3 Table specifies the correct abbreviated-dollar rule for $M/$K values. The contradiction is not resolved. |
-
-**Summary:** Both HIGH findings (FINDING-01 and FINDING-02) from the assumption-challenger are unresolved. All four MEDIUM findings (FINDING-03 through FINDING-06) are unresolved.
-
----
-
 ## 3. Acceptance Criteria Traceability
 
-| AC | Status | Notes |
-|---|---|---|
-| AC1 — 300-row reconciliation | Traceable | §11.4 reconciliation tests cover this. |
-| AC2 — Anomaly ground truth; ≤5 extra flags | Traceable | §3.2 algorithm + ground-truth test present. |
-| AC3 — Detector-vs-source-flag panel; pytest-verified | Traceable | §3.4 specifies panel and test. |
-| AC4 — Forecasts with intervals, model, CV error, confidence; CLAS=Low; dept×category refusal | Traceable | §5.1–5.8, §6 Tool 3. |
-| AC5 — C&C answer passes grounding; tool trace visible; persistent-pattern label | Traceable | §7, §3.5, §9.2 replay trace 02. |
-| AC6 — Fabricated number test triggers grounding flag | Traceable | §7.2 test harness. |
-| AC7 — Bursar question returns insufficient-data | Traceable | Appendix B + §9.2 prompt 07. |
-| AC8 — Replay completes without Bedrock credentials | Traceable | §9. |
-| AC9 — Bad period → validation report not crash; duplicates accepted with warning | **PARTIAL** | §2.5 covers the row-acceptance path. But AC9 cannot be fully tested without a typed `ValidationReport` schema (FINDING-01 from assumption-challenger is unresolved). |
-| AC10 — Process health: no causal claim; "descriptive only" in prompt and tool output | Traceable | §4.3. |
+| AC | Traceable? | Design Location | Notes |
+|---|---|---|---|
+| AC1 — 300-row reconciliation reproduces data profile | ✓ | §11.4 | All reconciliation tests present with correct tolerance values. |
+| AC2 — Anomaly ground truth: 17 rows ≥ 30%, persistent patterns, ≤5 extra flags | ✓ | §3.2, §3.5 | Ground truth test with GT set of 17 IDs present; persistent pattern ground truth tables present; sign-consistency tests present. |
+| AC3 — Detector-vs-source-flag panel pytest-verified | ✓ | §3.4 | Panel specified; `test_detector_source_agreement` present. |
+| AC4 — Forecasts with intervals/model/CV/confidence; CLAS=Low; dept×cat refusal | ✓ | §5.1–5.8, §6 Tool 3 | All elements present. Travel & Conferences additionally cannot use Seasonal Naive (noted §5.5). |
+| AC5 — C&C answer passes grounding; tool trace visible; persistent-pattern label | ✓ | §7, §3.5, §9.2 (trace 02) | Replay trace 02 specifies `explain_variance` + `detect_anomalies`; per-year variance from `quarterly_time_series` named as grounding anchor. |
+| AC6 — Fabricated number test triggers grounding flag | ✓ | §7.2 | `test_grounding_flag_triggers` and `test_grounding_exact_dollar_boundary` present. |
+| AC7 — Bursar question returns insufficient-data response | ✓ | Appendix B, §9.2 (trace 07) | Replay trace 07 specified as `list_entities` + insufficient-data pattern. |
+| AC8 — Replay mode completes without Bedrock credentials | ✓ | §9 | Fuzzy-match, REPLAY_ACTIVE flag, no boto3 instantiation all specified. |
+| AC9 — Bad period → validation report; duplicates accepted with warning | ✓ | §2.4, §2.5, §2.6 | `ValidationReport` typed; test `test_unmapped_period_row_accepted` present. |
+| AC10 — Process health: no causal claim; "descriptive only" in prompt and tool output | ✓ | §4.3 | Both system prompt text and `descriptive_note` field in tool response specified; test present. |
+
+All 10 acceptance criteria are traceable.
 
 ---
 
 ## 4. Locked Decision Compliance
 
-| Locked Decision | Respected? |
-|---|---|
-| Forecast target: spend-vs-budget ratio | ✓ §5.2 |
-| Anomaly algorithm: median/MAD, modified Z-score 0.6745×(v−median)/MAD, threshold 2.5 | ✓ §3.2 |
-| Persistent pattern rule: same-sign ≥±5% in ≥2 of 3 fiscal years | ✓ §3.5 |
-| STL threshold: minimum 8 quarters | ✓ §3.6 |
-| Dept×Category forecasting refused | ✓ §5.1, §6 Tool 3 |
-| No Prophet/deep learning | ✓ §5.3 |
+| Locked Decision | Respected? | Location |
+|---|---|---|
+| Forecast target: spend-vs-budget ratio | ✓ | §5.2 |
+| Anomaly algorithm: median/MAD, modified Z-score 0.6745×(v−median)/MAD, threshold 2.5 | ✓ | §3.2 |
+| Persistent pattern rule: same-sign ≥±5% in ≥2 of 3 fiscal years | ✓ | §3.5 |
+| STL threshold: minimum 8 quarters | ✓ | §3.6 |
+| Dept×Category forecasting refused | ✓ | §5.1, §6 Tool 3 |
+| No Prophet/deep learning | ✓ | §5.3 |
 
-All six locked decisions are respected.
+All 6 locked decisions are respected.
 
 ---
 
 ## 5. System Requirements (SYS-01 through SYS-06)
 
-| Requirement | Status | Notes |
+| Requirement | Status | Evidence |
 |---|---|---|
-| SYS-01 — LLM never computes numbers | Traceable | §7 grounding check; tool schemas include "never compute these numbers yourself" language; §6 tool descriptions carry the invariant. |
-| SYS-02 — Secrets from environment variables | ✓ | §11.1 .env.example; §8.3 BEDROCK_MODEL_ID from env; §9 no credentials in replay mode. |
-| SYS-03 — No financial figures in logs | ✓ | §7.1 Step 4 specifies log without numeric values. |
-| SYS-04 — Typed Pydantic interfaces for every endpoint and tool | **PARTIAL** | All 7 tool request/response models are defined. BUT `ValidationReport` (R1-05, FINDING-01) remains untyped. `ColumnMappingProposal`/`ColumnMappingRequest` (§2.3) are referenced but not defined (FINDING-08). SYS-04 is partially violated. |
-| SYS-05 — Bedrock timeout + exponential backoff | ✓ | §8.3 specifies 30s timeout, 3 retries (1s/2s/4s), error event on exhaustion. |
+| SYS-01 — LLM never computes numbers | ✓ | §7 grounding check; tool schemas include "never compute these numbers yourself" language; `dollar_forecast_available` machine-readable flag prevents fabricated dollar amounts when denominator is absent. |
+| SYS-02 — Secrets from environment variables | ✓ | §11.1 `.env.example`; `BEDROCK_MODEL_ID` from env; no credentials in replay mode (§9.3). |
+| SYS-03 — No financial figures in logs | ✓ | §7.1 Step 4 logs count only, not values; dept×category refusal logged without financial figures. |
+| SYS-04 — Typed Pydantic interfaces for every endpoint and tool | ✓ | All 7 tool request/response models defined. `ValidationReport` typed (§2.6). `ColumnMappingProposal`/`ColumnMappingRequest` defined (§2.3). |
+| SYS-05 — Bedrock timeout + exponential backoff | ✓ | §8.3: 30s timeout, 3 retries (1s/2s/4s), error event on exhaustion. |
 | SYS-06 — First token within seconds via SSE | ✓ | §8.1–8.2; tokens emitted from `contentBlockDelta` immediately. |
+
+All 6 system requirements are satisfied.
 
 ---
 
-## 6. Internal Consistency Check
+## 6. Internal Consistency
 
 | Check | Result |
 |---|---|
 | KPI panel uses same aggregation formula as chat tools | ✓ §3.7 specifies shared `build_variance_query()` helper. |
 | `planned_budget_total` in `forecast_results` DDL matches §5.2 derivation | ✓ Both specify FY2026 SUM(budget). |
 | Replay grounding check uses same `run_grounding_check()` as live path | ✓ §9.4. |
-| Source-forecast caveat text: §5.8 removed; §10.2 is authoritative | ✓ Appendix C NIT-01 confirms removal. |
-| `detect_anomalies` sensitivity range: schema says 1.0–5.0; §3.2 algorithm uses default 2.5 | ✓ Consistent. |
-| `stl_note` dual-use (STL unavailability AND dollar unavailability) | **CONFLICT** — §6 Tool 3 defines `stl_note` for STL unavailability; Appendix B overloads it for dollar unavailability. Two independent failure conditions share one nullable string field with no structured disambiguation. |
-| Confidence label table: rows 1 ("< 8 quarters") and 4 ("< 9 quarters") overlap | **INCONSISTENCY** — Row 1 fires first for < 8 quarters. Row 4 would only fire for exactly 8 quarters. But the table also has named rows (CLAS=6, T&C=7) that duplicate the < 8-quarter derivation. Order-of-evaluation is unambiguous but the overlap creates redundant special cases. |
+| `dollar_forecast_available` / `dollar_unavailable_reason` consistently referenced | ✓ Set in §6 Tool 3, handled in Appendix B edge case, grounding check keys off it. |
+| `anomaly_results` storage location and `anomaly_count` filter | ✓ Both §3.2 and §3.7 correctly reference `dataset_id` in per-dataset `.ddb` file; NEW-01 fix verified. |
+| `source_flag_disagreement_count` = FP+FN | ✓ Comment and note in §3.7 both correctly state FP+FN; NEW-02 fix verified. |
+| `quarterly_time_series` sourced from `explain_variance` only | ✓ §3.6 removed `query_actuals` reference; `ExplainVarianceResponse` has the field; `QueryActualsResponse` does not have it; NEW-03 fix verified. |
+| Confidence label table rows 1 and 2 merged | ✓ Single merged row covers < 9 quarters; NEW-04 fix verified. |
+| `rows_unmapped_period` field name consistent between model and test | ✓ Both §2.5 test and §2.6 `ValidationReport` now use `rows_unmapped_period`. |
+| `rows_rejected` in `ValidationReport` vs `rejected_rows` in §2.5 test | **INCONSISTENCY** — see NEW-05 below. |
+| §5.5 confidence decision table broken into two Markdown tables by a blockquote | **RENDERING DEFECT** — see NEW-06 below. |
 
 ---
 
 ## 7. Findings
 
-### FINDING-MR01: `ValidationReport` Pydantic model is absent — HIGH
+### NEW-05: `ValidationReport.rows_rejected` vs `report.rejected_rows` in §2.5 test — NIT
 
-**Location:** §2.6, Appendix C (assumption-challenger FINDING-01 not resolved)
-**Problem:** The design still lacks a `class ValidationReport(BaseModel)` with typed fields. Appendix C shows assumption-challenger FINDING-01 as unaddressed (it does not appear in the Revision 1 responses table, and no `ValidationReport` class definition exists in the design body). R1-05 mandates seven specific fields. The only test evidence is `report.rejected_rows` and `report.unmapped_periods` in §2.5, but the full contract (entity counts, fiscal period range, derived-column reconciliation counts, source-flag sign disagreements) is unspecified. SYS-04 requires typed Pydantic interfaces for every endpoint. AC9 cannot be fully tested without the typed schema.
-**Blocks:** AC9 (partial), SYS-04, R1-05.
-**Fix:** Add to §2.6:
+**Location:** §2.5 (unit test), §2.6 (`ValidationReport` Pydantic model)
+
+**Problem:** The `ValidationReport` Pydantic model in §2.6 defines the field as `rows_rejected: int`. The unit test in §2.5 asserts `report.rejected_rows == 0`. These names differ by word order: `rows_rejected` (model) vs `rejected_rows` (test). The test will raise `AttributeError: 'ValidationReport' object has no attribute 'rejected_rows'` at runtime, identical in character to the `rows_unmapped_period` / `unmapped_periods` mismatch that was just fixed by the NIT in Revision 3.
+
+**Fix:** Change the test assertion in §2.5 to match the model:
+
 ```python
-class DQFinding(BaseModel):
-    code: str           # e.g. "variance_zero_nonzero_pct", "duplicate_keys"
-    record_ids: list[str]
-    message: str
-
-class ValidationReport(BaseModel):
-    total_rows: int
-    rows_accepted: int
-    rows_rejected: int
-    rows_unmapped_period: int
-    fiscal_period_range: str           # e.g. "FY2024 Q1 – FY2026 Q4"
-    department_count: int
-    category_count: int
-    fund_source_count: int
-    variance_usd_mismatches: int       # recomputed vs stored
-    yoy_mismatches: int
-    forecast_accuracy_mismatches: int
-    duplicate_key_combos: int
-    duplicate_key_rows: int
-    source_flag_sign_disagreements: int
-    dq_findings: list[DQFinding]
+assert report.rows_rejected == 0
 ```
 
----
-
-### FINDING-MR02: `stl_note` dual-use creates unstructured LLM disambiguation — HIGH
-
-**Location:** §6 Tool 3 (`RunForecastResponse`), Appendix B
-**Problem:** Appendix B still packs a "Dollar forecast unavailable" message into `stl_note`. The `RunForecastResponse` has no structured boolean for dollar availability. The LLM system prompt instructs suppression of dollar citations when `dollar_forecast` is null, but this is a nullability check on a float field — it cannot distinguish "dollar fields null because no FY2026 budget rows" from "dollar fields null because computation was skipped." More critically, if both STL unavailability and dollar unavailability apply simultaneously, both messages must be concatenated into one string. The grounding check in §7 cannot distinguish these two conditions structurally; it relies on the LLM parsing the string. A subtle prompt variation could produce a SYS-01 violation (fabricated dollar amount).
-**Blocks:** SYS-01 (potential fabrication path), AC5.
-**Fix:** Add to `RunForecastResponse`:
-```python
-dollar_forecast_available: bool        # False when no FY2026 budget denominator
-dollar_unavailable_reason: str | None  # human-readable; populated when dollar_forecast_available=False
-```
-Amend Appendix B to set `dollar_forecast_available=False` and `dollar_unavailable_reason="No FY2026 budget data found for this entity."` rather than overloading `stl_note`. The system prompt and grounding check should key off `dollar_forecast_available: false` as the machine-readable suppression signal.
+(Or rename the model field to `rejected_rows` and update both places — but `rows_rejected` is more consistent with the surrounding `rows_accepted` and `rows_unmapped_period` naming convention already in the model.)
 
 ---
 
-### FINDING-MR03: `anomaly_results` DuckDB table DDL missing — MEDIUM
-
-**Location:** §3.2, §3.7 (`KpiResponse.anomaly_count`)
-**Problem:** `KpiResponse.anomaly_count` requires reading from `anomaly_results` ("count from most recent detect_anomalies run (stored in anomaly_results)"), but no `CREATE TABLE anomaly_results` DDL exists in the design. The coder writing `kpis.py` cannot implement `anomaly_count` without knowing the schema — specifically whether there is a `dataset_id` column, a `computed_at` timestamp to identify the "most recent" run, and a `detector_flag` column to count.
-**Blocks:** R2-07 (partial), AC3 consistency between KPI panel and anomaly detector.
-**Fix:** Add to §3.2 (alongside the algorithm):
-```sql
-CREATE TABLE IF NOT EXISTS anomaly_results (
-    run_id        VARCHAR NOT NULL,   -- UUID for this detection run
-    dataset_id    VARCHAR NOT NULL,
-    record_id     VARCHAR NOT NULL,
-    detector_flag INTEGER NOT NULL,   -- 1 = flagged
-    z_score       DOUBLE,
-    peer_group    VARCHAR,
-    sensitivity   DOUBLE NOT NULL,
-    computed_at   TIMESTAMP NOT NULL
-);
-CREATE TABLE IF NOT EXISTS anomaly_run_summary (
-    run_id      VARCHAR PRIMARY KEY,
-    dataset_id  VARCHAR NOT NULL,
-    sensitivity DOUBLE NOT NULL,
-    tp INTEGER, fp INTEGER, fn INTEGER, tn INTEGER,
-    computed_at TIMESTAMP NOT NULL
-);
-```
-Update `KpiResponse.anomaly_count` comment: "count of `detector_flag=1` rows in `anomaly_results` for the most recent `run_id` by `computed_at` for this `dataset_id`."
-
----
-
-### FINDING-MR04: R2-07 fiscal-year breakdown missing from `KpiResponse` — MEDIUM
-
-**Location:** §3.7 (`KpiResponse` model), R2-07
-**Problem:** R2-07 requires the KPI panel to display "total actual vs budget variance (dollar and percent, **by fiscal year**)." `KpiResponse` contains `total_actual`, `total_budget`, `total_variance_pct` at the aggregate level and an optional `fiscal_year_filter` for filtering to a single year — but no `fiscal_year_summary` list returning the three-year breakdown in a single response. To display the confirmed FY2024 (−1.0%), FY2025 (−2.6%), FY2026 (−3.1%) row, the KPI panel would require three separate `GET /kpis` calls, which is neither specified nor efficient.
-**Blocks:** R2-07, AC1 (KPI panel data completeness for demo).
-**Fix:** Add to `KpiResponse`:
-```python
-class FiscalYearSummary(BaseModel):
-    fiscal_year: str
-    total_actual: float
-    total_budget: float
-    variance_usd: float
-    variance_pct: float
-
-class KpiResponse(BaseModel):
-    ...
-    fiscal_year_summary: list[FiscalYearSummary]  # always includes all available years
-```
-The `GET /kpis` DuckDB query adds a `GROUP BY fiscal_year` sub-query that always returns all available fiscal years regardless of the `fiscal_year_filter`.
-
----
-
-### FINDING-MR05: R2-05 plain trend line fallback computation unspecified — MEDIUM
-
-**Location:** §3.6 (STL Decomposition Gating), R2-05
-**Problem:** R2-05 mandates: "Where fewer than 8 quarters are available, only a **plain trend line shall be shown**." §3.6 specifies the visible unavailability note (correct) but says nothing about how the "plain trend line" is computed or rendered. Travel & Conferences (7 quarters) and College of Liberal Arts & Sciences (6 quarters) need a real specification: OLS regression? Moving average? Raw data points connected by a line? Without this, two independent coders will produce different outputs, and the frontend component (`TrendChart.tsx`) has no contract to implement against.
-**Blocks:** R2-05.
-**Fix:** Add one sentence to §3.6: "For STL-ineligible entities, `TrendChart.tsx` renders the raw quarterly spend-vs-budget ratio data points connected by a line, overlaid with an OLS regression line computed client-side from the `quarterly_time_series` array in the `explain_variance` or `query_actuals` response. No additional API call is required for the fallback trend line."
-
----
-
-### FINDING-MR06: R1-05 derived-column reconciliation absent from ingestion pipeline — MEDIUM
-
-**Location:** §2.6 (Validation Report), R1-05
-**Problem:** R1-05 explicitly requires "derived-column reconciliation results (variance_usd = actual − budget, yoy_change_pct = actual / prior_year − 1, forecast_accuracy_pct = 100 − |forecast − actual| / actual × 100)" in the validation report. The design covers the BUD-00018 edge case (variance_usd=0 but variance_pct≠0) but never specifies a row-by-row recomputation of all three derived columns against their constituents. For `Team6Dataset.xlsx` the mismatch count is 0 for all three, but an arbitrary uploaded dataset could have systematic derivation errors that would pass ingestion silently, violating R1-05 and AC9.
-**Blocks:** R1-05, AC9 (partial).
-**Fix:** Add to §2.6 before the DQ findings list:
-```sql
--- R1-05 derived column reconciliation (run against budget_records after load)
-SELECT COUNT(*) AS variance_usd_mismatches
-FROM budget_records
-WHERE source_variance IS NOT NULL
-  AND ABS((actual - budget) - source_variance) > 0.01;
-
-SELECT COUNT(*) AS yoy_mismatches
-FROM budget_records
-WHERE prior_year_actual IS NOT NULL AND prior_year_actual != 0
-  AND yoy_change_pct IS NOT NULL
-  AND ABS((actual / prior_year_actual - 1) * 100 - yoy_change_pct) > 0.05;
-
-SELECT COUNT(*) AS forecast_accuracy_mismatches
-FROM budget_records
-WHERE source_forecast IS NOT NULL AND actual != 0
-  AND forecast_accuracy_pct IS NOT NULL
-  AND ABS((100 - ABS(source_forecast - actual) / actual * 100) - forecast_accuracy_pct) > 0.05;
-```
-These three counts populate the three fields added to `ValidationReport` (FINDING-MR01 fix).
-
----
-
-### FINDING-MR07: SYS-04 violated by undefined `ColumnMappingProposal` / `ColumnMappingRequest` schemas — MEDIUM
-
-**Location:** §2.3 (Column Mapping)
-**Problem:** SYS-04 requires typed Pydantic interfaces for every API endpoint. `POST /upload` returns a `ColumnMappingProposal` and accepts a `ColumnMappingRequest`, but neither class is defined anywhere in the design. The assumption-challenger rated this NIT (FINDING-08); however, given SYS-04's explicit requirement for typed interfaces on every endpoint, and given that the frontend `Upload.tsx` cannot be implemented without knowing what it receives and sends, this finding is elevated to MEDIUM.
-**Blocks:** SYS-04, R1-02 (column mapping UI implementation).
-**Fix:** Add to §2.3:
-```python
-class ColumnMappingProposal(BaseModel):
-    dataset_name: str
-    source_columns: list[str]
-    suggestions: dict[str, str | None]    # source_col → canonical_field or None
-    required_fields: list[str]            # canonical fields that must be mapped
-    unmapped_required: list[str]          # canonical fields with no auto-suggestion
-
-class ColumnMappingRequest(BaseModel):
-    dataset_name: str
-    mapping: dict[str, str]               # source_col → canonical_field (confirmed by user)
-```
-
----
-
-### FINDING-MR08: Abbreviated-dollar tolerance in §6 Tool 3 contradicts §7.1 tolerance table — NIT
-
-**Location:** §6 Tool 3 ("Dollar field grounding note"), §7.1 Step 3 Table
-**Problem:** §6 Tool 3 states: "The grounding check verifies cited dollar amounts against these fields using the **bare-dollar tolerance rule (exact ± $1)**." But the `run_forecast` tool returns dollar values that will be in the millions (total-level forecast). The LLM will naturally cite these as "$22.5M" — an abbreviated format. §7.1 Step 3 Table correctly specifies the abbreviated-dollar rule ($N.NM → rounding range). The §6 note contradicts §7.1 and would cause the implementer of `grounding.py` to apply the wrong rule to forecast dollar citations, potentially generating spurious grounding flags on correctly rounded million-dollar figures.
-**Fix:** Amend the dollar field grounding note in §6 Tool 3: "The grounding check verifies cited dollar amounts against these fields using the tolerance rule appropriate to the cited format: bare-dollar citations (e.g. $108,693) use ± $1; abbreviated citations ($M, $K) use the rounding rules in §7.1 Step 3 Table."
-
----
-
-### FINDING-MR09: Confidence label table has redundant rows that could produce brittle hard-coded entity names in code — NIT
+### NEW-06: §5.5 confidence decision table is split into two disconnected Markdown tables — NIT
 
 **Location:** §5.5 (Confidence Label Logic)
-**Problem:** The table lists "College of Liberal Arts & Sciences (6 quarters) → Low (always)" and "Travel & Conferences (7 quarters) → Low (always)" as named rows, in addition to the general "< 8 quarters → Low" row. These named rows are derivable from the general rule and risk being implemented as special-cased entity names rather than as derivations of the < 8-quarter rule. If any new entity has fewer than 8 quarters of data, the general rule handles it but the named rows may mislead a coder into thinking only CLAS and T&C need the Low label.
-**Fix:** Remove the two named rows. Add a note after the "< 8 quarters → Low" row: "This includes College of Liberal Arts & Sciences (6 quarters) and Travel & Conferences (7 quarters) in the sample dataset. No hard-coded entity names in code; the general rule applies."
+
+**Problem:** The confidence decision table is intended to be read as a single ordered table evaluated top-to-bottom ("first match wins"). The Rev 4 fix correctly merged the first row into "Entity has < 9 quarters of history (< 8: cannot model; 8 exactly: no CV folds) → Low" and placed the CLAS/Travel & Conferences note as a blockquote immediately after. However, in Markdown, a blockquote between table rows breaks the table. The rendered result is:
+
+- **Table 1:** one row: the merged `< 9 quarters` row.
+- **Blockquote:** the CLAS/Travel note.
+- **Table 2 (no header row):** the remaining rows: `9 quarters exactly`, `High CV error`, `Wide 95% PI`, `Medium CV error`, `Low CV error`.
+
+The second table has no column header. A coder reading the rendered document may interpret the second table as a separate, independent table rather than the continuation of the first — leading to confusion about evaluation order and possibly implementing the `9 quarters exactly → Low` rule as a separate code path with no documented header context.
+
+**Fix:** Move the CLAS/Travel blockquote note **after** the complete table, not in the middle of it:
+
+```markdown
+The full decision table (all conditions evaluated in order; first match wins):
+
+| Condition | Label |
+|---|---|
+| Entity has < 9 quarters of history (< 8: cannot model; 8 exactly: no CV folds) | Low |
+| 9 quarters exactly (only 1 CV fold; insufficient for uplift) | Low |
+| High CV error: MAE ≥ 0.15 OR sMAPE ≥ 30% | Low |
+| Wide 95% PI: width > 0.3 AND otherwise would be High | Medium (override) |
+| Medium CV error: 0.05 ≤ MAE < 0.15 OR 10% ≤ sMAPE < 30% | Medium |
+| Low CV error: MAE < 0.05 AND sMAPE < 10% | High |
+
+> In the sample dataset, College of Liberal Arts & Sciences (6 quarters) and Travel & Conferences (7 quarters) are covered by the first row. No hard-coded entity names in code; the general rule applies.
+```
+
+This keeps the table intact and positions the explanatory note where it provides context without breaking the table structure.
 
 ---
 
 ## 8. Verified Assumptions
 
-The following design claims were checked against `docs/design.md` and `tests/ground_truth.md`:
+The following design claims were verified against `docs/design.md` and `tests/ground_truth.md`:
 
 - **300 rows, 25 columns** — confirmed `design.md §1.1`.
 - **record_id unique; BUD-00001 to BUD-00300** — confirmed `design.md §1.1`.
@@ -294,43 +244,59 @@ The following design claims were checked against `docs/design.md` and `tests/gro
 - **Forecast target: spend-vs-budget ratio** — confirmed `design.md §3`.
 - **Travel & Conferences 7 quarters; CLAS 6 quarters** — confirmed `design.md §1.10`.
 - **17 rows with |variance_pct| ≥ 30** — confirmed `design.md §1.9`, `ground_truth.md §2`.
+- **All 17 ground-truth record IDs present in §3.2 test fixture** — confirmed against `ground_truth.md §2`.
 - **Anomaly method: median/MAD, z=0.6745×(v−median)/MAD, threshold 2.5** — confirmed `ground_truth.md §1`.
 - **Persistent pattern rule: same-sign ≥±5% in ≥2 of 3 years** — confirmed `ground_truth.md §3`.
 - **Consulting & Contracts over all 3 years: +16.1%, +13.9%, +14.7%** — confirmed `ground_truth.md §3`.
 - **Travel & Conferences under all 3 years: −17.9%, −14.1%, −9.8%** — confirmed `ground_truth.md §3`.
-- **Administrative Overhead FY2026: exactly −5.0% (boundary qualifies)** — confirmed `ground_truth.md §3`.
+- **Administrative Overhead FY2026: exactly −5.0% (boundary qualifies, inclusive rule)** — confirmed `ground_truth.md §3`.
 - **Facility Maintenance reverses to −13.1% in FY2026** — confirmed `ground_truth.md §3`.
+- **Research Operations FY2024 at −4.4% (below threshold)** — confirmed `ground_truth.md §3`.
+- **College of Liberal Arts & Sciences: +9.3%, −4.8%, +5.0% (FY2025 excluded from over-qualifying years)** — confirmed `ground_truth.md §3`.
 - **Dept×Category forecasting refused with correct reason (avg 2.2 rows)** — confirmed `requirements.md` Out of Scope.
-- **Dollar forecast = predicted_ratio × SUM(budget FY2026)** — confirmed `design.md §3` candidate (a) and the design §5.2.
+- **Dollar forecast = predicted_ratio × SUM(budget FY2026)** — confirmed `design.md §3`.
 - **Top 3 over-budget departments: Architecture +13.52%, Pharmacy +10.06%, Office of Research +7.92%** — confirmed `design.md §1.8`.
 - **FY2024/FY2025/FY2026 overall variance: −1.04%, −2.62%, −3.14%** — confirmed `design.md §1.8`.
 - **SYS-01 grounding check enforced; fabricated number test present** — confirmed §7.2.
 - **Replay mode: seven prompts; no Bedrock credentials when active** — confirmed §9.
 - **Bedrock: 30s timeout, 3 retries (1s/2s/4s), exponential backoff** — confirmed §8.3.
 - **WCAG 2.1 AA note: full validation requires manual testing** — confirmed §12.3 note.
+- **`ValidationReport` field `rows_unmapped_period` matches test assertion `report.rows_unmapped_period`** — confirmed §2.5 and §2.6; Rev 3 NIT fix verified.
+- **`anomaly_results` DDL has `dataset_id` column and is stored in per-dataset `.ddb`** — confirmed §3.2; NEW-01 fix verified.
+- **`FiscalYearSummary` has all 5 fields** — confirmed §3.7.
+- **`dollar_forecast_available` and `dollar_unavailable_reason` present in `RunForecastResponse`** — confirmed §6 Tool 3.
+- **`source_flag_disagreement_count` comment = FP+FN; `GET /kpis` note says `fp + fn`** — confirmed §3.7; NEW-02 fix verified.
+- **`quarterly_time_series` sourced only from `explain_variance` response in §3.6** — confirmed §3.6; NEW-03 fix verified.
+- **Confidence table first row merged to `< 9 quarters`** — confirmed §5.5; NEW-04 fix verified.
 
 ---
 
 ## 9. Unverified / Wrong Assumptions
 
-- **UNRESOLVED (FINDING-MR01 / assumption-challenger FINDING-01): `ValidationReport` schema** — The design describes the validation report's DQ checks in prose but never defines the Pydantic model. The R1-05 fields (entity counts, fiscal period range, derived-column reconciliation counts, source-flag sign disagreements) cannot be verified as present.
-- **UNRESOLVED (FINDING-MR02 / assumption-challenger FINDING-02): `stl_note` overloading** — Appendix B still packs "Dollar forecast unavailable" into `stl_note`. The `RunForecastResponse` has no `dollar_forecast_available: bool` field. Two independent failures share one nullable string.
-- **UNRESOLVED (FINDING-MR03 / assumption-challenger FINDING-03): `anomaly_results` schema** — Asserted to exist in DuckDB; DDL never provided.
-- **UNRESOLVED (FINDING-MR04 / assumption-challenger FINDING-04): fiscal-year breakdown in `KpiResponse`** — R2-07 requires it; `KpiResponse` does not contain it.
-- **UNRESOLVED (FINDING-MR05 / assumption-challenger FINDING-05): plain trend line computation** — No method is specified for STL-ineligible entities.
-- **UNRESOLVED (FINDING-MR06 / assumption-challenger FINDING-06): derived-column reconciliation** — The three SQL reconciliation queries required by R1-05 are absent from §2.6.
-- **UNRESOLVED (FINDING-MR07): `ColumnMappingProposal` / `ColumnMappingRequest` schemas** — Referenced in §2.3; not defined. SYS-04 is violated.
-- **INCONSISTENCY (FINDING-MR08): §6 Tool 3 dollar grounding note vs §7.1 tolerance table** — §6 specifies bare-dollar tolerance for all dollar amounts; §7.1 correctly specifies abbreviated format rules. These contradict each other.
+- **MINOR FIELD NAME MISMATCH (NEW-05): `rows_rejected` vs `rejected_rows`** — `ValidationReport` defines `rows_rejected: int` (§2.6), but the §2.5 test asserts `report.rejected_rows == 0`. This will cause an `AttributeError` at test time. Fix is unambiguous: rename the test assertion to `report.rows_rejected`. Severity NIT — does not affect design contract, only test code.
+
+- **RENDERING DEFECT (NEW-06): §5.5 confidence table split by blockquote** — The blockquote inserted between the first and remaining rows of the confidence decision table causes two separate Markdown tables to render, with the second table missing its header row. A coder reading the rendered document may not recognise the rows after the blockquote as a continuation of the same decision table. Severity NIT — the decision logic itself is correct and unambiguous from the source Markdown; however, fixing the table structure eliminates any risk of misinterpretation.
 
 ---
 
 ## 10. Verdict
 
+**Previous findings resolution:**
+- NEW-01 (MEDIUM): ✅ RESOLVED
+- NEW-02 (MEDIUM): ✅ RESOLVED
+- NEW-03 (MEDIUM): ✅ RESOLVED
+- NEW-04 (NIT): ✅ RESOLVED
+- Field-name NIT (`rows_unmapped_period`): ✅ RESOLVED
+
+**New findings:**
+- NEW-05 (NIT): `report.rejected_rows` in §2.5 test vs `rows_rejected` in `ValidationReport` model — trivially fixable, unambiguous correct value.
+- NEW-06 (NIT): §5.5 confidence table split by blockquote — rendering defect, logic is correct, fix is to move blockquote after the complete table.
+
 **Finding counts:**
-- HIGH: 2 (FINDING-MR01, FINDING-MR02)
-- MEDIUM: 5 (FINDING-MR03, FINDING-MR04, FINDING-MR05, FINDING-MR06, FINDING-MR07)
-- NIT: 2 (FINDING-MR08, FINDING-MR09)
+- HIGH: 0
+- MEDIUM: 0
+- NIT: 2 (NEW-05, NEW-06)
 
-**VERDICT: REVISE_REQUIRED**
+**VERDICT: APPROVED_WITH_ADVISORIES**
 
-Both HIGH findings from the assumption-challenger pass (FINDING-01 and FINDING-02) remain unaddressed in Revision 2. All four of the assumption-challenger's MEDIUM findings (FINDING-03 through FINDING-06) are also unaddressed. One additional MEDIUM finding was raised (FINDING-MR07: undefined column-mapping schemas, elevated from assumption-challenger NIT because SYS-04 explicitly requires typed interfaces for every endpoint). The design cannot proceed to implementation until these seven findings are resolved.
+All 5 Revision 3 findings (NEW-01, NEW-02, NEW-03, NEW-04, and the field-name NIT) are genuinely resolved in Revision 4. No new HIGH or MEDIUM findings are introduced. Two NITs are identified: a test-assertion field name mismatch (`rejected_rows` vs `rows_rejected`) and a Markdown table rendering defect in §5.5 caused by placing the blockquote inside the decision table. Neither affects the design contract or coder decisions; both are trivially correctable. The design is approved for implementation, with the advisory that the two NITs should be corrected before implementation to avoid a test failure and a potential readability confusion.

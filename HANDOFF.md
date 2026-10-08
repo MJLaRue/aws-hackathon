@@ -1,8 +1,8 @@
 # Handoff — Budget Forecasting Analyst
 
 **Last updated:** 2026-10-08  
-**Workflow ID (active):** `wf_29eecd0b93b1b8e5`  
-**Session context:** Design phase — iterating toward an approved technical design before any code is written.
+**Workflow ID (active):** none  
+**Session context:** Implementation paused — design APPROVED, tasks.json written, scaffold committed. Resume at T02.
 
 ---
 
@@ -19,36 +19,39 @@ The enhanced dataset is `data/Team6Dataset_Enhanced 1.xlsx`.
 
 ## Current state
 
-### Design phase — in progress
+### Design: APPROVED ✅
 
-A multi-step design loop (`wf_29eecd0b93b1b8e5`) is running. It cycles through:
-1. `wf-design` authors `docs/technical-design.md`
-2. `assumption-challenger` (wf-design-reviewer with custom persona) reviews it → `docs/assumption-challenger-findings.md`
-3. `wf-design-reviewer` (mechanical) → `docs/design-review.md` + `docs/design-review.json`
-4. `wf-design` revises if verdict = REVISE_REQUIRED
+`docs/technical-design.md` is at **Revision 4** (2026-10-08).  
+`docs/design-review.json` → `{"verdict": "APPROVED_WITH_ADVISORIES"}` — no HIGH or MEDIUM findings.
 
-**Revision 2 is done** (1913 lines). The second assumption-challenger + mechanical pass has completed with `REVISE_REQUIRED` (7 findings — 2 HIGH, 5 MEDIUM). `revise-design-v2` is queued or running to address them.
+The design went through 4 revision iterations:
+- Rev 1→2: Initial design loop  
+- Rev 2→3: Fixed all 9 findings (2 HIGH, 5 MEDIUM, 2 NIT) from the mechanical review  
+- Rev 3→4: Fixed 3 new MEDIUMs introduced by Rev 3 fixes + 2 NITs  
+- Rev 4: APPROVED — only 2 NIT-level field-name mismatches remaining (addressed in tasks T04/T05)
 
-**Outstanding findings (Revision 2 → Revision 3):**
+### Implementation: scaffold committed, task T02 is next
 
-| # | Sev | Title |
+**Git state:** `main` branch is 1 commit ahead of `origin/main`.  
+**Last commit (`3d802d5`):** repo scaffold — directory structure, docker-compose.yml, .env.example, .gitignore, Dockerfiles, Vite config, backend/frontend subpackage stubs, tasks.json, NIT doc fixes T04+T05.
+
+**Tasks completed:**
+
+| ID | Title | Status |
 |---|---|---|
-| HIGH-01 | HIGH | `ValidationReport` Pydantic model never defined — R1-05 requires 7 typed fields; tests reference fields that don't exist |
-| HIGH-02 | HIGH | `stl_note` field re-used for "dollar forecast unavailable" message — structural LLM grounding gap (SYS-01 risk) |
-| MED-01 | MEDIUM | `anomaly_results` DDL absent — anomaly persistence table never specified |
-| MED-02 | MEDIUM | `KpiResponse` missing `fiscal_year_summary` — R2-07 requires top over/under by year |
-| MED-03 | MEDIUM | Plain trend line fallback for STL-ineligible entities unspecified (R2-05) |
-| MED-04 | MEDIUM | Derived-column reconciliation SQL missing from validation report spec (R1-05) |
-| MED-05 | MEDIUM | `ColumnMappingProposal` / `ColumnMappingRequest` schemas undefined — SYS-04 violation |
+| T01 | Repo scaffold: directories, docker-compose.yml, .env.example, .gitignore | ✅ done |
+| T04 | NIT fix: `report.rows_rejected` field name in design doc | ✅ done |
+| T05 | NIT fix: §5.5 confidence table blockquote placement | ✅ done |
 
-The loop will run up to 2 more iterations. Stop condition: `docs/design-review.json` → `{"verdict": "APPROVED"}` or `{"verdict": "APPROVED_WITH_ADVISORIES"}`.
+**Next task to implement: T02** — FastAPI skeleton with `/health` endpoint.
 
-### What is NOT started yet
+**What exists on disk:**
+- `backend/` — Dockerfile, main.py (stub), requirements.txt, empty `__init__.py` in agent/, analysis/, forecasting/, ingestion/, replay/, tools/
+- `frontend/` — Dockerfile, nginx.conf, package.json, vite.config.ts, src/ (empty)
+- `tests/fixtures/` — empty
+- `docker-compose.yml`, `.env.example`, `.gitignore` at root
 
-- Implementation tasks (`tasks.json`) — planned after design approval
-- Any application source code
-- CDK infra code (`infra/`)
-- Test fixtures
+**No application logic has been written yet.** The backend subpackage directories exist but contain only `__init__.py` stubs.
 
 ---
 
@@ -109,39 +112,42 @@ data/
 
 ---
 
-## Next steps (after design is approved)
+## Next steps
 
-1. **Check workflow status** — inspect `docs/design-review.json`. If `"verdict"` is `"APPROVED"` or `"APPROVED_WITH_ADVISORIES"`, the design phase is done. If `"REVISE_REQUIRED"`, the loop is still iterating (or exhausted — check workflow with `inspect_workflow wf_29eecd0b93b1b8e5`).
+**START HERE:** Launch the implementation workflow.
 
-2. **Run the planner** — once design is approved:
-   ```
-   run_workflow bundled://investigate  (brief: decompose technical-design.md into tasks.json)
-   ```
-   Or use `wf-planner` via `agent://wf-planner` with the design + requirements as context.
-   Output: `tasks.json` at repo root — ordered implementation checklist, end-to-end slice first.
+The design is approved and tasks.json is ready. The next action is to start `bundled://ralph` pointing at `tasks.json`. Ralph will pick up the first unchecked task, implement it, mark it done, and loop until all 53 tasks are complete.
 
-3. **Implementation** — use `bundled://ralph` or a `workflowPrompt` with parallel backend + frontend tracks, each with a `semantic_reviewer` gate.
-   - Backend track: FastAPI, DuckDB ingestion, tools, grounding check, SSE, replay mode
-   - Frontend track: React+Vite, Recharts, chat UI, sources panel, KPI panel, anomaly table
-   - QA track (after both): functional QA + security + accessibility + assumption-challenger second pass on QA results
+```
+run_workflow bundled://ralph
+  goal: "Implement the university budget forecasting analyst app per docs/technical-design.md. Work through tasks.json one task at a time. Backend: Python 3.12 / FastAPI / DuckDB / statsforecast / AWS Bedrock. Frontend: React + TypeScript + Vite + Recharts. Follow the design exactly — no deviations."
+  prd_path: "c:\\Users\\bbala\\aws-hackathon\\tasks.json"
+```
 
-4. **CDK infra** — implement `infra/` after core app is working locally. AWS credentials will be supplied by the user at deploy time via env vars — never store them.
+**Implementation tracks (within Ralph's loop):**
+- skeleton (T01–T05): repo structure, FastAPI skeleton, Vite scaffold, 2 NIT design fixes
+- backend (T06–T31): ingestion, variance, anomaly, forecasting, grounding, SSE, Bedrock agent, replay
+- frontend (T32–T40): useSSEChat hook, Chat, Upload, TrendChart, KPI, Anomaly, Dashboard, smoke test
+- qa (T41–T48): ground-truth tests, replay-without-creds, fabricated-number test, reconciliation
+- infra (T51–T53): CDK stack (after app works locally)
+- demo (T49–T50): 7 scripted prompts, README
 
-5. **Demo** — 7 scripted prompts (R6-02). Ground truth in `docs/design.md` §5. Replay mode must work without Bedrock credentials.
+**CDK infra:** T51–T53 implement `infra/`. AWS credentials must be supplied by the user at deploy time via env vars — never stored in repo.
+
+**Demo:** 7 scripted prompts from R6-02 in `docs/technical-design.md §9.2`. Replay mode (T46) must work without Bedrock credentials. Ground truth in `docs/design.md`.
 
 ---
 
-## Resuming the active workflow
+## Resuming implementation
 
-If the workflow `wf_29eecd0b93b1b8e5` is still running when you start:
-- Check: inspect_workflow wf_29eecd0b93b1b8e5
-- It will notify you via send_message when steps complete
-- Do not re-launch a new design workflow — the existing one has the full context baked in
-- If it exhausted iterations (3 max) without APPROVED: read the last `design-review.md` and launch a single `wf-design` pass with a targeted prompt addressing only the remaining HIGH/MEDIUM findings
+**Start here:** Check `tasks.json` for the first task where `"done": false` — that is T02.
 
-## Resuming if workflow already finished
+Launch Ralph pointing at tasks.json:
 
-If `docs/design-review.json` shows APPROVED or APPROVED_WITH_ADVISORIES:
-- The design is done. Read `docs/technical-design.md` to understand the full system.
-- Move directly to step 2 (planner) above.
-- MEDIUM advisories from the final review should be included in the planner's task list as explicit items.
+```
+run_workflow bundled://ralph
+  goal: "Implement the university budget forecasting analyst app per docs/technical-design.md (Revision 4, APPROVED). Work through tasks.json one task at a time. Backend: Python 3.12 / FastAPI / DuckDB / statsforecast / AWS Bedrock. Frontend: React + TypeScript + Vite + Recharts. Follow the design exactly — no deviations. All files go under c:\\Users\\bbala\\aws-hackathon\\."
+  prd_path: "c:\\Users\\bbala\\aws-hackathon\\tasks.json"
+```
+
+Ralph will pick up the first unchecked task (T02), implement it, mark it done, and loop through all 53 tasks automatically. Stop condition: `tasks.json` → `"complete": true`.
