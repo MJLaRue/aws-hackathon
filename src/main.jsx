@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  LayoutGrid,
   LayoutDashboard,
   Table2,
   Receipt,
@@ -40,6 +41,7 @@ import {
 } from "lucide-react";
 import { api, setCsrf, qs, money, exactMoney, number, today } from "./api";
 import "./styles.css";
+import "./workspace.css";
 
 const navigation = [
   ["overview", "Dashboard", LayoutDashboard, "budgets"],
@@ -65,12 +67,24 @@ const resourceLabels = {
   audit: titles.audit,
   admin: titles.admin,
 };
+const dockLabels = {
+  overview: "Home",
+  budget: "Budget",
+  expenses: "Spending",
+  drafts: "Proposals",
+  commitments: "Commitments",
+  salaries: "People",
+  imports: "Uploads",
+  notes: "Discuss",
+  audit: "Activity",
+  archives: "Years",
+  admin: "Settings",
+};
 const navigationGroups = [
-  [
-    "Workspace",
-    ["overview", "budget", "expenses", "drafts", "commitments", "salaries"],
-  ],
-  ["Manage", ["imports", "notes", "audit", "archives", "admin"]],
+  ["Start here", ["overview"]],
+  ["Plan & spend", ["budget", "expenses", "commitments"]],
+  ["Review & collaborate", ["drafts", "notes", "audit"]],
+  ["People & operations", ["salaries", "imports", "archives", "admin"]],
 ];
 const descriptions = {
   overview: "Your department’s finances, in focus.",
@@ -254,6 +268,7 @@ function Modal({ title, subtitle, onClose, children, wide = false }) {
   useEffect(() => {
     const el = ref.current;
     el.showModal();
+    el.querySelector("[data-initial-focus]")?.focus();
     const cancel = (e) => {
       e.preventDefault();
       onClose();
@@ -851,7 +866,8 @@ function Budget({
   confirm,
   mode = "active",
 }) {
-  const [query, setQuery] = useState(""),
+  const [view, setView] = useState("cards"),
+    [query, setQuery] = useState(""),
     [page, setPage] = useState(1),
     [account, setAccount] = useState("");
   const q = useDebounced(query);
@@ -887,32 +903,51 @@ function Budget({
       <Status state={state}>
         {state.data && (
           <>
-            <div className="stats-grid three budget-summary">
-              <Stat
-                label="Starting allocation"
-                value={money(state.data.totals.base_amount)}
-                detail="Your approved starting budget"
-                icon={Wallet}
-              />
-              <Stat
-                label="Net budget changes"
-                value={money(state.data.totals.adjustments)}
-                detail={
-                  mode === "draft"
-                    ? "Includes proposals awaiting review"
-                    : "Signed changes to the live plan"
-                }
-                icon={TrendingUp}
-              />
-              <Stat
-                label="Budget plan total"
-                value={money(state.data.totals.planned_budget)}
-                detail="Starting allocation + adjustments"
-                icon={CircleDollarSign}
-                accent
-              />
+            <div className="plan-overview">
+              <div className="plan-total">
+                <span className="plan-label">
+                  <span className="plan-status-dot" />{" "}
+                  {mode === "draft" ? "PROPOSED PLAN" : "CURRENT BUDGET PLAN"}
+                </span>
+                <strong>{money(state.data.totals.planned_budget)}</strong>
+                <span>
+                  Across {state.data.rows.length} budget accounts · FY{" "}
+                  {context.fiscal_year}
+                </span>
+              </div>
+              <div className="plan-components">
+                <div>
+                  <span>
+                    <Wallet size={16} /> Starting allocation
+                  </span>
+                  <strong>{exactMoney(state.data.totals.base_amount)}</strong>
+                </div>
+                <div>
+                  <span>
+                    <TrendingUp size={16} /> Net budget changes
+                  </span>
+                  <strong
+                    className={
+                      Number(state.data.totals.adjustments) < 0
+                        ? "negative"
+                        : Number(state.data.totals.adjustments) > 0
+                          ? "positive"
+                          : ""
+                    }
+                  >
+                    {Number(state.data.totals.adjustments) > 0 ? "+" : ""}
+                    {exactMoney(state.data.totals.adjustments)}
+                  </strong>
+                </div>
+                <p>
+                  <ShieldCheck size={14} /> Starting allocation + published
+                  changes{mode === "draft" ? " + proposed changes" : ""}
+                </p>
+              </div>
             </div>
-            <section className="card budget-matrix">
+            <section
+              className={`budget-accounts ${view === "table" ? "card budget-matrix" : ""}`}
+            >
               <div className="card-header">
                 <div>
                   <div className="section-kicker">ALLOCATION BREAKDOWN</div>
@@ -924,105 +959,200 @@ function Budget({
                       : "Live budget"}
                   </p>
                 </div>
-                <Badge tone={mode === "draft" ? "amber" : "green"}>
-                  {mode === "draft" ? "Proposal preview" : "Live"}
-                </Badge>
+                <div
+                  className="account-view-switch"
+                  role="group"
+                  aria-label="Account display"
+                >
+                  <button
+                    aria-label="Account cards"
+                    aria-pressed={view === "cards"}
+                    onClick={() => setView("cards")}
+                  >
+                    <LayoutGrid size={16} />
+                    <span>Cards</span>
+                  </button>
+                  <button
+                    aria-label="Account table"
+                    aria-pressed={view === "table"}
+                    onClick={() => setView("table")}
+                  >
+                    <Table2 size={16} />
+                    <span>Table</span>
+                  </button>
+                </div>
               </div>
-              <div
-                className="table-scroll"
-                tabIndex={0}
-                role="region"
-                aria-label="Budget plan accounts"
-              >
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Banner account</th>
-                      <th className="numeric">Starting allocation</th>
-                      <th className="numeric">Adjustments</th>
-                      <th className="numeric">Budget plan total</th>
-                      <th>Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {state.data.rows.map((row) => (
-                      <tr key={row.account_code}>
-                        <td>
-                          <div className="account-cell">
-                            <span
-                              className={`account-icon ${row.group_type === "Personnel" ? "personnel" : ""}`}
-                            >
-                              {row.group_type === "Personnel" ? (
-                                <Users size={18} />
-                              ) : (
-                                <Landmark size={18} />
-                              )}
-                            </span>
-                            <div>
-                              <strong>{row.category_name}</strong>
-                              <small className="cell-meta">
-                                {row.account_code} · {row.group_type}
-                              </small>
+              {view === "cards" ? (
+                <div className="account-grid">
+                  {state.data.rows.map((row) => (
+                    <article className="allocation-card" key={row.account_code}>
+                      <div className="allocation-card-top">
+                        <span
+                          className={`account-icon ${row.group_type === "Personnel" ? "personnel" : ""}`}
+                        >
+                          {row.group_type === "Personnel" ? (
+                            <Users size={19} />
+                          ) : (
+                            <Landmark size={19} />
+                          )}
+                        </span>
+                        <span>{row.account_code}</span>
+                        <Badge>{row.group_type}</Badge>
+                      </div>
+                      <h3>{row.category_name}</h3>
+                      <strong className="allocation-amount">
+                        {exactMoney(row.planned_budget)}
+                      </strong>
+                      <div
+                        className="allocation-share"
+                        aria-label={`${row.category_name}: ${Math.round((Number(row.planned_budget) / Math.max(1, Number(state.data.totals.planned_budget))) * 100)}% of the plan`}
+                      >
+                        <span
+                          style={{
+                            width: `${Math.min(100, Math.max(0, (Number(row.planned_budget) / Math.max(1, Number(state.data.totals.planned_budget))) * 100))}%`,
+                          }}
+                        />
+                      </div>
+                      <dl>
+                        <div>
+                          <dt>Starting allocation</dt>
+                          <dd>{exactMoney(row.base_amount)}</dd>
+                        </div>
+                        <div>
+                          <dt>Budget changes</dt>
+                          <dd
+                            className={
+                              Number(row.adjustments) < 0
+                                ? "negative"
+                                : Number(row.adjustments) > 0
+                                  ? "positive"
+                                  : ""
+                            }
+                          >
+                            {Number(row.adjustments) > 0 ? "+" : ""}
+                            {exactMoney(row.adjustments)}
+                          </dd>
+                        </div>
+                      </dl>
+                      <div className="allocation-card-actions">
+                        <button
+                          aria-label={`View ${row.category_name}`}
+                          onClick={() => open({ kind: "line", row })}
+                        >
+                          <MessageSquare size={15} /> Details
+                        </button>
+                        {can("budgets", true) && !readOnly && (
+                          <button
+                            aria-label={`Edit allocation for ${row.category_name}`}
+                            onClick={() => open({ kind: "base", row })}
+                          >
+                            <Pencil size={14} /> Edit allocation
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className="table-scroll"
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Budget plan accounts"
+                >
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Banner account</th>
+                        <th className="numeric">Starting allocation</th>
+                        <th className="numeric">Adjustments</th>
+                        <th className="numeric">Budget plan total</th>
+                        <th>Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.data.rows.map((row) => (
+                        <tr key={row.account_code}>
+                          <td>
+                            <div className="account-cell">
+                              <span
+                                className={`account-icon ${row.group_type === "Personnel" ? "personnel" : ""}`}
+                              >
+                                {row.group_type === "Personnel" ? (
+                                  <Users size={18} />
+                                ) : (
+                                  <Landmark size={18} />
+                                )}
+                              </span>
+                              <div>
+                                <strong>{row.category_name}</strong>
+                                <small className="cell-meta">
+                                  {row.account_code} · {row.group_type}
+                                </small>
+                              </div>
                             </div>
-                          </div>
+                          </td>
+                          <td className="numeric">
+                            {exactMoney(row.base_amount)}
+                          </td>
+                          <td
+                            className={`numeric ${Number(row.adjustments) > 0 ? "positive" : Number(row.adjustments) < 0 ? "negative" : ""}`}
+                          >
+                            {Number(row.adjustments) > 0 ? "+" : ""}
+                            {exactMoney(row.adjustments)}
+                          </td>
+                          <td className="numeric emphasis">
+                            {exactMoney(row.planned_budget)}
+                            <div
+                              className="allocation-track"
+                              aria-hidden="true"
+                            >
+                              <span
+                                style={{
+                                  width: `${Math.min(100, Math.max(0, (Number(row.planned_budget) / Math.max(1, Number(state.data.totals.planned_budget))) * 100))}%`,
+                                }}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <div className="row-actions">
+                              <button
+                                aria-label={`View ${row.category_name}`}
+                                onClick={() => open({ kind: "line", row })}
+                              >
+                                <MessageSquare size={16} />
+                              </button>
+                              {can("budgets", true) && !readOnly && (
+                                <button
+                                  aria-label={`Edit allocation for ${row.category_name}`}
+                                  onClick={() => open({ kind: "base", row })}
+                                >
+                                  <Pencil size={15} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td>Total budget</td>
+                        <td className="numeric">
+                          {exactMoney(state.data.totals.base_amount)}
                         </td>
                         <td className="numeric">
-                          {exactMoney(row.base_amount)}
+                          {exactMoney(state.data.totals.adjustments)}
                         </td>
-                        <td
-                          className={`numeric ${Number(row.adjustments) > 0 ? "positive" : Number(row.adjustments) < 0 ? "negative" : ""}`}
-                        >
-                          {Number(row.adjustments) > 0 ? "+" : ""}
-                          {exactMoney(row.adjustments)}
+                        <td className="numeric">
+                          {exactMoney(state.data.totals.planned_budget)}
                         </td>
-                        <td className="numeric emphasis">
-                          {exactMoney(row.planned_budget)}
-                          <div className="allocation-track" aria-hidden="true">
-                            <span
-                              style={{
-                                width: `${Math.min(100, Math.max(0, (Number(row.planned_budget) / Math.max(1, Number(state.data.totals.planned_budget))) * 100))}%`,
-                              }}
-                            />
-                          </div>
-                        </td>
-                        <td>
-                          <div className="row-actions">
-                            <button
-                              aria-label={`View ${row.category_name}`}
-                              onClick={() => open({ kind: "line", row })}
-                            >
-                              <MessageSquare size={16} />
-                            </button>
-                            {can("budgets", true) && !readOnly && (
-                              <button
-                                aria-label={`Edit allocation for ${row.category_name}`}
-                                onClick={() => open({ kind: "base", row })}
-                              >
-                                <Pencil size={15} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
+                        <td />
                       </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td>Total budget</td>
-                      <td className="numeric">
-                        {exactMoney(state.data.totals.base_amount)}
-                      </td>
-                      <td className="numeric">
-                        {exactMoney(state.data.totals.adjustments)}
-                      </td>
-                      <td className="numeric">
-                        {exactMoney(state.data.totals.planned_budget)}
-                      </td>
-                      <td />
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+                    </tfoot>
+                  </table>
+                </div>
+              )}
             </section>
           </>
         )}
@@ -2848,6 +2978,77 @@ function EditForm({ dialog, context, meta, onClose, onSaved }) {
   );
 }
 
+function ToolsMenu({ can, page, go, onClose }) {
+  const [query, setQuery] = useState("");
+  const permitted = navigation.filter(
+    ([id, , , resource]) =>
+      can(resource) && (id !== "overview" || can("expenses")),
+  );
+  const matches = permitted.filter(([id, title]) =>
+    `${title} ${descriptions[id]}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase()),
+  );
+  return (
+    <Modal
+      title="Your workspace tools"
+      subtitle="Choose where to go. Everything is one click away."
+      onClose={onClose}
+      wide
+    >
+      <div className="tool-menu-body">
+        <label className="tool-finder">
+          <Search size={20} />
+          <input
+            autoFocus
+            data-initial-focus
+            aria-label="Find a workspace tool"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search budgets, people, discussions…"
+          />
+          <kbd>ESC</kbd>
+        </label>
+        <nav aria-label="Workspace tools">
+          {navigationGroups.map(([group, ids]) => {
+            const items = matches.filter(([id]) => ids.includes(id));
+            if (!items.length) return null;
+            return (
+              <section className="tool-menu-group" key={group}>
+                <h3>{group}</h3>
+                <div className="tool-menu-grid">
+                  {items.map(([id, title, Icon]) => (
+                    <button
+                      key={id}
+                      aria-label={title}
+                      aria-current={page === id ? "page" : undefined}
+                      onClick={() => go(id)}
+                    >
+                      <span className="tool-menu-icon">
+                        <Icon size={22} />
+                      </span>
+                      <span>
+                        <strong>{title}</strong>
+                        <small>{descriptions[id]}</small>
+                      </span>
+                      <ChevronRight size={16} />
+                    </button>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+          {!matches.length && (
+            <Empty title="No tools found">
+              Try a different word, such as budget, spending, or people.
+            </Empty>
+          )}
+        </nav>
+      </div>
+    </Modal>
+  );
+}
+
 function App() {
   const [identity, setIdentity] = useState(null),
     [config, setConfig] = useState(null),
@@ -2860,7 +3061,6 @@ function App() {
     [version, setVersion] = useState(0),
     [dialog, setDialog] = useState(null),
     [toast, setToast] = useState(""),
-    [mobile, setMobile] = useState(false),
     [initError, setInitError] = useState("");
   const notify = (message) => setToast(message),
     refresh = () => setVersion((v) => v + 1);
@@ -2924,7 +3124,6 @@ function App() {
     history.pushState({}, "", `/app/${next}`);
     setPage(next);
     setInApp(true);
-    setMobile(false);
     setDialog(null);
     window.scrollTo(0, 0);
   };
@@ -2983,6 +3182,22 @@ function App() {
     window.addEventListener("ledger:unauthorized", expired);
     return () => window.removeEventListener("ledger:unauthorized", expired);
   }, []);
+  useEffect(() => {
+    const shortcut = (event) => {
+      if (
+        identity &&
+        inApp &&
+        !dialog &&
+        (event.metaKey || event.ctrlKey) &&
+        event.key.toLowerCase() === "k"
+      ) {
+        event.preventDefault();
+        setDialog({ kind: "tools" });
+      }
+    };
+    window.addEventListener("keydown", shortcut);
+    return () => window.removeEventListener("keydown", shortcut);
+  }, [identity, inApp, dialog]);
   if (!ready)
     return (
       <div className="boot">
@@ -3006,127 +3221,100 @@ function App() {
       {!inApp || !identity ? (
         <Landing onSignIn={signIn} config={config} />
       ) : (
-        <div className="app-shell">
-          <aside className={`sidebar ${mobile ? "mobile-open" : ""}`}>
-            <div className="sidebar-top">
-              <a
-                href="/"
-                onClick={(e) => {
-                  e.preventDefault();
-                  history.pushState({}, "", "/");
-                  setInApp(false);
-                }}
-              >
-                <Brand />
-              </a>
-              <button
-                className="mobile-close icon-button"
-                aria-label="Close navigation"
-                onClick={() => setMobile(false)}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="sidebar-context">
-              <span className="uic-mark">UIC</span>
-              <div>
-                <strong>Budget workspace</strong>
-                <small>Department finance</small>
-              </div>
-            </div>
-            <nav aria-label="Main navigation">
-              {navigationGroups.map(([group, ids]) => {
-                const items = navigation.filter(
-                  (x) =>
-                    ids.includes(x[0]) &&
-                    can(x[3]) &&
-                    (x[0] !== "overview" || can("expenses")),
-                );
-                if (!items.length) return null;
-                return (
-                  <div className="nav-group" key={group}>
-                    <div className="nav-label">{group}</div>
-                    {items.map(([id, title, Icon]) => (
-                      <button
-                        key={id}
-                        className={page === id ? "active" : ""}
-                        aria-current={page === id ? "page" : undefined}
-                        onClick={() => go(id)}
-                      >
-                        <Icon size={18} />
-                        {title}
-                        {page === id && <span className="nav-dot" />}
-                      </button>
-                    ))}
-                  </div>
-                );
-              })}
+        <div className="workspace-v2">
+          <aside className="tool-dock" aria-label="Workspace dock">
+            <a
+              className="dock-home"
+              href="/"
+              aria-label="Ledger home"
+              onClick={(e) => {
+                e.preventDefault();
+                history.pushState({}, "", "/");
+                setInApp(false);
+              }}
+            >
+              <span className="dock-monogram">
+                l<span>.</span>
+              </span>
+            </a>
+            <nav className="dock-navigation" aria-label="Main navigation">
+              {navigation
+                .filter(
+                  ([id, , , resource]) =>
+                    can(resource) && (id !== "overview" || can("expenses")),
+                )
+                .map(([id, title, Icon]) => (
+                  <button
+                    key={id}
+                    onClick={() => go(id)}
+                    aria-label={title}
+                    aria-current={page === id ? "page" : undefined}
+                    className={page === id ? "active" : ""}
+                    title={title}
+                  >
+                    <Icon size={20} />
+                    <span>{dockLabels[id]}</span>
+                  </button>
+                ))}
             </nav>
-            <div className="sidebar-bottom">
-              <div className="ai-coming">
-                <Sparkles size={19} />
-                <strong>Intelligence, next.</strong>
-                <p>
-                  Your records are the foundation for forecasts and scenarios.
-                </p>
-                <span>AI layer · Planned</span>
-              </div>
+            <div className="dock-bottom">
               <button
-                className="profile"
+                className="dock-tools"
+                aria-label="All tools"
+                title="All tools (⌘K / Ctrl+K)"
+                onClick={() => setDialog({ kind: "tools" })}
+              >
+                <LayoutGrid size={19} />
+                <span>All tools</span>
+              </button>
+              <button
+                className="dock-avatar"
+                aria-label="Your account"
                 onClick={() => setDialog({ kind: "profile" })}
               >
-                <span className="avatar">
-                  {identity.user.first_name[0]}
-                  {identity.user.last_name[0]}
-                </span>
-                <span>
-                  <strong>
-                    {identity.user.first_name} {identity.user.last_name}
-                  </strong>
-                  <small>{identity.role}</small>
-                </span>
-                <ChevronDown size={15} />
+                {identity.user.first_name[0]}
+                {identity.user.last_name[0]}
               </button>
             </div>
           </aside>
-          {mobile && (
-            <button
-              className="sidebar-scrim"
-              aria-label="Close navigation"
-              onClick={() => setMobile(false)}
-            />
-          )}
-          <div className="workspace-main">
-            <header className="topbar">
-              <div className="breadcrumb">
-                <button
-                  className="mobile-toggle icon-button"
-                  aria-label="Open navigation"
-                  aria-expanded={mobile}
-                  onClick={() => setMobile(true)}
-                >
-                  <Menu size={22} />
-                </button>
-                <span>Workspace</span>
-                <ChevronRight size={14} />
-                <strong>{titles[page] || "Dashboard"}</strong>
+          <div className="work-area">
+            <div className="work-context">
+              <div className="context-brand">
+                <Brand />
+                <span className="context-separator" />
+                <span className="uic-mark">UIC</span>
+                <span>Finance workspace</span>
               </div>
-              <div className="topbar-right">
-                <span className="workspace-secure">
-                  <ShieldCheck size={15} /> UIC workspace
-                </span>
+              <div className="context-actions">
                 {meta?.synthetic_data && (
                   <Badge tone="amber">Synthetic demo data</Badge>
                 )}
+                <button
+                  className="tools-search"
+                  aria-label="Find a tool"
+                  onClick={() => setDialog({ kind: "tools" })}
+                >
+                  <Search size={16} />
+                  <span>Find a tool</span>
+                  <kbd>⌘ K</kbd>
+                </button>
                 <button
                   className="icon-button"
                   aria-label="Workspace help"
                   onClick={() => setDialog({ kind: "help" })}
                 >
-                  <CircleHelp size={19} />
+                  <CircleHelp size={20} />
+                </button>
+                <button
+                  className="mobile-profile"
+                  aria-label="Your account"
+                  onClick={() => setDialog({ kind: "profile" })}
+                >
+                  {identity.user.first_name[0]}
+                  {identity.user.last_name[0]}
                 </button>
               </div>
-            </header>
+            </div>
             <main className="workspace-content">
               <div className="page-heading">
                 <div>
@@ -3245,6 +3433,43 @@ function App() {
             </main>
           </div>
         </div>
+      )}
+      {inApp && identity && (
+        <nav className="mobile-dock" aria-label="Quick navigation">
+          {navigation
+            .filter(
+              ([id, , , resource]) =>
+                ["overview", "budget", "expenses", "salaries"].includes(id) &&
+                can(resource) &&
+                (id !== "overview" || can("expenses")),
+            )
+            .map(([id, title, Icon]) => (
+              <button
+                key={id}
+                aria-label={title}
+                aria-current={page === id ? "page" : undefined}
+                onClick={() => go(id)}
+              >
+                <Icon size={20} />
+                <span>{dockLabels[id]}</span>
+              </button>
+            ))}
+          <button
+            aria-label="Open navigation"
+            onClick={() => setDialog({ kind: "tools" })}
+          >
+            <LayoutGrid size={20} />
+            <span>All tools</span>
+          </button>
+        </nav>
+      )}
+      {dialog?.kind === "tools" && (
+        <ToolsMenu
+          can={can}
+          page={page}
+          go={go}
+          onClose={() => setDialog(null)}
+        />
       )}
       {dialog?.kind === "login" && (
         <Login

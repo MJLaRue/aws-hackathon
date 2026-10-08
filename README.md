@@ -28,6 +28,8 @@ Seeded financial records and employee identities are **synthetic**, across five 
 
 The app uses product-facing labels: **Dashboard**, **Budget plan**, **Spending**, **Proposed changes**, **Commitments**, **People & pay**, **Data uploads**, **Discussions**, **Activity log**, **Budget years**, and **Workspace settings**. Section headings, forms, and help text use the same terminology. Existing API routes, CSV columns, database entities, and financial rules retain their original contracts.
 
+A floating tool dock opens each workspace section. **All tools** provides grouped, searchable navigation (⌘K / Ctrl+K), with a bottom dock on mobile. The budget plan offers account cards and a comparison table, both with account details and allocation editing.
+
 - Department dashboard, monthly spending, and workspace/year selection.
 - Budget matrix, opening base editing, signed live adjustments, optional logical source references, and CSV/XLSX export.
 - Shared draft creates, edits, and deletions; overlay preview; discard; atomic publishing with source-snapshot conflict checks.

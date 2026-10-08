@@ -80,13 +80,89 @@ test("landing, every workspace screen, and responsive navigation render without 
   ).toBe(true);
   await page.getByRole("button", { name: "Open navigation" }).click();
   await page
-    .getByRole("navigation")
+    .getByRole("dialog")
+    .getByRole("navigation", { name: "Workspace tools" })
     .getByRole("button", { name: "Spending", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "Spending", exact: true }),
   ).toBeVisible();
   expect(errors).toEqual([]);
+});
+test("account views, details, and searchable tool navigation work on desktop and mobile", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("button", { name: "Budget plan", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Account cards" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  const firstCard = page.locator(".allocation-card").first();
+  const category = await firstCard.getByRole("heading").textContent();
+  await firstCard
+    .getByRole("button", { name: `View ${category}`, exact: true })
+    .click();
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByRole("heading", { name: category, exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await firstCard
+    .getByRole("button", { name: `Edit allocation for ${category}` })
+    .click();
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByRole("heading", { name: "Edit starting allocation" }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Account table" }).click();
+  await expect(
+    page.getByRole("region", { name: "Budget plan accounts" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Account table" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.keyboard.press("Control+k");
+  const finder = page
+    .getByRole("dialog")
+    .getByRole("textbox", { name: "Find a workspace tool" });
+  await expect(finder).toBeFocused();
+  await finder.fill("people");
+  const tools = page
+    .getByRole("dialog")
+    .getByRole("navigation", { name: "Workspace tools" });
+  await expect(tools.getByRole("button")).toHaveCount(1);
+  await tools
+    .getByRole("button", { name: "People & pay", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "People & pay", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Your account", exact: true }).click();
+  await expect(
+    page.getByRole("dialog").getByRole("button", { name: /Sign out/ }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Budget plan", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Account table" }).click();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Account cards" }).click();
+  await expect(page.locator(".allocation-card").first()).toBeVisible();
 });
 test("record an expense, edit it, verify persistent data, and remove it through the UI", async ({
   page,
