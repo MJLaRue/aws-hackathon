@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import logo from './assets/uic-logo-white.png'
 import Dashboard from './components/Dashboard'
 import Upload from './components/Upload'
 import { API_BASE, type UploadResult } from './types'
@@ -42,7 +43,7 @@ export default function App() {
     <div className="app">
       <header className="masthead">
         <div className="brand">
-          <span className="brand-org">University of Illinois Chicago</span>
+          <a href="https://www.uic.edu" className="brand-logo"><img src={logo} alt="University of Illinois Chicago" width="218" height="79" /></a>
           <h1>Budget Forecasting Analyst</h1>
         </div>
         <label className="field on-navy">Dataset{' '}
@@ -61,6 +62,20 @@ export default function App() {
           ? <Upload hasDataset={!!active} onLoaded={(r) => { onLoaded(r); go('/dashboard') }} />
           : active && <Dashboard key={active} datasetId={active} sessionId={sessionId} replayMode={replayMode} />}
       </main>
+      <footer className="site-footer">
+        <div className="footer-inner">
+          <address>1200 West Harrison St. · Chicago, Illinois 60607 · (312) 996-7000</address>
+          <p>
+            &copy; {new Date().getFullYear()} The Board of Trustees of the University of Illinois
+            {' | '}<a href="https://www.vpaa.uillinois.edu/resources/web_privacy">Privacy Statement</a>
+          </p>
+          <p className="footer-system">
+            <a href="http://www.uillinois.edu/">University of Illinois System</a>
+            {' | '}<a href="http://www.illinois.edu/">Urbana-Champaign</a>
+            {' | '}<a href="http://www.uis.edu/">Springfield</a>
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }
