@@ -1,0 +1,950 @@
+{
+  "metrics": {
+    "model_used_for_forecast": "seasonal_naive",
+    "train_window": "Jul 2023 \u2013 Dec 2025  (195 row-months)",
+    "val_window": "Jan 2026 \u2013 Jun 2026",
+    "forecast_window": "Jul 2026 \u2013 Dec 2026",
+    "series_count": 10,
+    "note": "All series are based on synthetic historical data. Metrics are illustrative of model behavior, not real-world accuracy.",
+    "gradient_boosting": {
+      "val_mae": 4157.77,
+      "val_wape": 18.6
+    },
+    "seasonal_naive": {
+      "val_mae": 3110.4,
+      "val_wape": 13.91
+    }
+  },
+  "series": {
+    "College of Pharmacy|Personnel & Salaries": {
+      "department": "College of Pharmacy",
+      "category": "Personnel & Salaries",
+      "history_is_synthetic": false,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 38664.3,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 45218.42,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 39988.81,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 41994.73,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 43885.59,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 45099.68,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 33108.07,
+          "forecast_naive": 33108.07,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 33283.29,
+          "forecast_naive": 33283.29,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 44769.42,
+          "forecast_naive": 44769.42,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 11902.48,
+          "forecast_naive": 11902.48,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 39422.28,
+          "forecast_naive": 39422.28,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 12611.56,
+          "forecast_naive": 12611.56,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        }
+      ]
+    },
+    "University Library|Administrative Costs": {
+      "department": "University Library",
+      "category": "Administrative Costs",
+      "history_is_synthetic": true,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 12720.11,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 13195.15,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 21403.33,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 11560.6,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 11989.57,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 11876.41,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 13608.36,
+          "forecast_naive": 13608.36,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 11434.96,
+          "forecast_naive": 11434.96,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 13204.24,
+          "forecast_naive": 13204.24,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 13252.17,
+          "forecast_naive": 13252.17,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 11940.97,
+          "forecast_naive": 11940.97,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 13527.75,
+          "forecast_naive": 13527.75,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        }
+      ]
+    },
+    "College of Architecture|Research Operations": {
+      "department": "College of Architecture",
+      "category": "Research Operations",
+      "history_is_synthetic": false,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 22495.01,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 37645.42,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 26191.13,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 26644.82,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 22993.89,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 26577.49,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 28331.95,
+          "forecast_naive": 28331.95,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 23385.5,
+          "forecast_naive": 23385.5,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 26770.13,
+          "forecast_naive": 26770.13,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 25339.94,
+          "forecast_naive": 25339.94,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 22914.98,
+          "forecast_naive": 22914.98,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 26514.42,
+          "forecast_naive": 26514.42,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        }
+      ]
+    },
+    "IT Services|Technology & Equipment": {
+      "department": "IT Services",
+      "category": "Technology & Equipment",
+      "history_is_synthetic": true,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 21383.63,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 18781.3,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 17963.86,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 18572.07,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 18420.96,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 21946.54,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 15257.64,
+          "forecast_naive": 15257.64,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 16940.63,
+          "forecast_naive": 16940.63,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 22419.25,
+          "forecast_naive": 22419.25,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 21651.1,
+          "forecast_naive": 21651.1,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 26500.97,
+          "forecast_naive": 26500.97,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 20352.72,
+          "forecast_naive": 20352.72,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        }
+      ]
+    },
+    "Student Affairs|Student Scholarships": {
+      "department": "Student Affairs",
+      "category": "Student Scholarships",
+      "history_is_synthetic": true,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 12594.71,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 14667.39,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 20101.89,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 10627.75,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 11603.47,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 14054.38,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 20870.89,
+          "forecast_naive": 20870.89,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 23671.45,
+          "forecast_naive": 23671.45,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 20433.77,
+          "forecast_naive": 20433.77,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 13986.86,
+          "forecast_naive": 13986.86,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 10317.91,
+          "forecast_naive": 10317.91,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 10705.46,
+          "forecast_naive": 10705.46,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        }
+      ]
+    },
+    "Facilities Management|Maintenance & Repairs": {
+      "department": "Facilities Management",
+      "category": "Maintenance & Repairs",
+      "history_is_synthetic": true,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 9525.28,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 10448.68,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 11329.0,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 10603.92,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 9468.19,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 12767.79,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 11538.49,
+          "forecast_naive": 11538.49,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 12114.22,
+          "forecast_naive": 12114.22,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 10289.4,
+          "forecast_naive": 10289.4,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 10178.56,
+          "forecast_naive": 10178.56,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 11554.76,
+          "forecast_naive": 11554.76,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 10616.96,
+          "forecast_naive": 10616.96,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        }
+      ]
+    },
+    "College of Business|Consulting & Contracts": {
+      "department": "College of Business",
+      "category": "Consulting & Contracts",
+      "history_is_synthetic": true,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 14456.94,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 19825.7,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 13695.42,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 14789.77,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 16472.44,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 15590.35,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 13494.45,
+          "forecast_naive": 13494.45,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 15731.79,
+          "forecast_naive": 15731.79,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 15765.21,
+          "forecast_naive": 15765.21,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 14933.79,
+          "forecast_naive": 14933.79,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 20454.64,
+          "forecast_naive": 20454.64,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 15941.96,
+          "forecast_naive": 15941.96,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        }
+      ]
+    },
+    "Research Institute|Research Operations": {
+      "department": "Research Institute",
+      "category": "Research Operations",
+      "history_is_synthetic": true,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 49082.34,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 28254.98,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 29293.17,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 45986.03,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 35285.03,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 32006.96,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 30280.22,
+          "forecast_naive": 30280.22,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 26823.08,
+          "forecast_naive": 26823.08,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 31787.59,
+          "forecast_naive": 31787.59,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 30439.51,
+          "forecast_naive": 30439.51,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 32429.06,
+          "forecast_naive": 32429.06,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 29692.64,
+          "forecast_naive": 29692.64,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        }
+      ]
+    },
+    "College of Engineering|Personnel & Salaries": {
+      "department": "College of Engineering",
+      "category": "Personnel & Salaries",
+      "history_is_synthetic": false,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 32082.49,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 32908.11,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 32599.75,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 35113.96,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 36172.29,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 36740.77,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 28417.01,
+          "forecast_naive": 28417.01,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 28435.2,
+          "forecast_naive": 28435.2,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 39851.77,
+          "forecast_naive": 39851.77,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 38202.59,
+          "forecast_naive": 38202.59,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 35493.94,
+          "forecast_naive": 35493.94,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 38732.74,
+          "forecast_naive": 38732.74,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": false
+        }
+      ]
+    },
+    "Finance & Administration|Administrative Costs": {
+      "department": "Finance & Administration",
+      "category": "Administrative Costs",
+      "history_is_synthetic": true,
+      "validation": [
+        {
+          "month": "2026-01",
+          "actual": 8711.09,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-02",
+          "actual": 10077.32,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-03",
+          "actual": 9278.25,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-04",
+          "actual": 9014.3,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-05",
+          "actual": 10335.43,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-06",
+          "actual": 8698.59,
+          "is_forecast": false,
+          "history_is_synthetic": true
+        }
+      ],
+      "forecasts": [
+        {
+          "month": "2026-07",
+          "forecast_gb": 10051.19,
+          "forecast_naive": 10051.19,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-08",
+          "forecast_gb": 8810.85,
+          "forecast_naive": 8810.85,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-09",
+          "forecast_gb": 8641.75,
+          "forecast_naive": 8641.75,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-10",
+          "forecast_gb": 9137.47,
+          "forecast_naive": 9137.47,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-11",
+          "forecast_gb": 10507.63,
+          "forecast_naive": 10507.63,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        },
+        {
+          "month": "2026-12",
+          "forecast_gb": 11301.96,
+          "forecast_naive": 11301.96,
+          "forecast_actual": null,
+          "is_forecast": true,
+          "history_is_synthetic": true
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# Backend dependencies
+# Install for local dev: pip install -r requirements.txt
+# For Lambda deployment: pip install -r requirements.txt -t ./package/
+
+flask==3.0.3
+flask-cors==4.0.1
+python-dotenv==1.0.1
+pandas==2.2.2
+openpyxl==3.1.4
+numpy==2.0.0
+aws-wsgi==0.2.2       # API Gateway ↔ Flask bridge for Lambda
+boto3==1.34.144    # only needed when DATA_SOURCE=s3
+
+# Phase 2 – ML forecasting
+scikit-learn==1.5.1
+joblib==1.4.2

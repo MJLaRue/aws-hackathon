@@ -1,6 +1,6 @@
 # Adding the AI layer
 
-The present application establishes the financial record system. Forecasting, anomaly detection, scenarios, and language-model explanations are not active features.
+The application includes the financial record system and separate historical workbook analytics from `Dev_HV`. Workbook forecasting, anomaly review, and scenarios are available through **Forecasting & scenarios**; see [integration notes](INTEGRATION.md). Language-model explanations and forecasts based on live MySQL workspace records are not implemented. The following guidance applies to that future live-record AI layer.
 
 Add forecasting/explanation services beside the finance services. Reuse authenticated context, resource permissions and department scopes. Use `matrix()` plus dated, non-deleted expenses as the authoritative baseline. Salary access is separately required; aggregate before external model calls. Do not send UINs, SAML/session records, or unscoped audit history to a model.
 

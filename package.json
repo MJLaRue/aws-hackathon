@@ -7,7 +7,7 @@
     "node": ">=20.19"
   },
   "scripts": {
-    "dev": "concurrently -k -n api,web \"npm run dev:api\" \"npm run dev:web\"",
+    "dev": "concurrently -k -n api,web,analytics \"npm run dev:api\" \"npm run dev:web\" \"npm run dev:analytics\"",
     "dev:api": "node --watch server/index.js",
     "dev:web": "vite --host 127.0.0.1",
     "db:migrate": "node server/cli.js migrate",
@@ -17,7 +17,10 @@
     "build": "vite build",
     "start": "node server/index.js",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
-    "test:ui": "playwright test"
+    "test:ui": "playwright test",
+    "dev:analytics": "node scripts/start-analytics.js",
+    "setup:analytics": "python3 -m venv .venv && .venv/bin/python -m pip install -r backend/requirements.txt",
+    "test:analytics": ".venv/bin/python backend/test_phase2.py"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",
@@ -36,7 +39,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "sequelize": "^6.37.7",
-    "zod": "^4.1.11"
+    "zod": "^4.1.11",
+    "recharts": "^2.15.4"
   },
   "overrides": {
     "shell-quote": "^1.11.0",

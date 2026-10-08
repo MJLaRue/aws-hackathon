@@ -798,6 +798,9 @@ function Workspace() {
           <span className="dock-monogram">a<span>.</span></span>
         </a>
         <nav className="dock-navigation" aria-label="Main navigation">
+          <a className="button ghost small" href="/forecasting.html">
+            Forecasts
+          </a>
           {PAGES.map(([id, title, Icon]) => (
             <button
               key={id}

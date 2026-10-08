@@ -3286,6 +3286,17 @@ function App() {
                 <span>Finance workspace</span>
               </div>
               <div className="context-actions">
+                {identity.permissions.scope === "all" && can("budgets") && (
+                  <a
+                    className="button ghost small workbook-link"
+                    href="/forecasting.html"
+                    aria-label="Forecasting & scenarios"
+                    title="Forecasting & scenarios"
+                  >
+                    <TrendingUp size={16} />
+                    <span>Forecasting & scenarios</span>
+                  </a>
+                )}
                 {meta?.synthetic_data && (
                   <Badge tone="amber">Synthetic demo data</Badge>
                 )}
@@ -3631,9 +3642,9 @@ function App() {
             </p>
             <h3>AI capabilities</h3>
             <p>
-              The current version provides the budget-management foundation.
-              Forecasting, anomaly detection, and AI explanations are planned
-              for the next phase.
+              Forecasting and scenario planning are available in Forecasting & scenarios,
+              using the historical demonstration workbook. These analyses do not modify
+              workspace budgets. AI explanations are planned for a later phase.
             </p>
           </div>
         </Modal>

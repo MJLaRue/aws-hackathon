@@ -49,6 +49,15 @@ const live = (data) => ({
   description: "Test adjustment",
   ...data,
 });
+test("workbook analytics retains workspace session, scope, origin, and CSRF guards", async () => {
+  await request(app).get("/api/analytics/summary").expect(401);
+  await manager.get("/api/analytics/summary").expect(403);
+  await admin.post("/api/analytics/forecast/run").send({}).expect(403);
+  await admin.post("/api/analytics/scenarios/run")
+    .set("X-CSRF-Token", csrf).set("Origin", "https://untrusted.example")
+    .send({ adjustments: [] }).expect(403);
+  await admin.get("/api/analytics/unknown").expect(404);
+});
 before(async () => {
   await db.authenticate();
   await db.query("SET FOREIGN_KEY_CHECKS = 0");

@@ -4,10 +4,11 @@ A working department budget application for AWS/UIC Enterprise AI Hackathon Team
 
 ## Run locally
 
-Prerequisites: Node.js 20.19+ and Docker with Compose. The local database binds to `127.0.0.1:3307`; the development API and UI bind to loopback as well.
+Prerequisites: Node.js 20.19+, Python 3.11, and Docker with Compose. The local database binds to `127.0.0.1:3307`; the development API and UI bind to loopback as well.
 
 ```sh
 npm ci
+npm run setup:analytics
 cp .env.example .env
 docker compose -p uic-budget up -d --wait mysql
 npm run db:setup
@@ -41,7 +42,7 @@ A floating tool dock opens each workspace section. **All tools** provides groupe
 - Read-only archives, idempotent July 1 rollover in America/Chicago, checked on startup and every minute.
 - User status, roles/resource permissions, department hierarchy, Banner accounts, persistent sessions, and configured SAML endpoints.
 
-The **AI layer is not implemented yet**. It is labeled as the next phase; no forecasts, anomaly scores, or AI explanations are fabricated. See [AI extension](docs/AI_EXTENSION.md).
+The **AI chat layer is not implemented yet**. Workbook analytics, model forecasting, and scenario planning from `Dev_HV` are available through **Forecasting & scenarios** in the workspace. See [combined application](docs/INTEGRATION.md) and [AI extension](docs/AI_EXTENSION.md).
 
 ## Financial rules
 

@@ -8,3 +8,10 @@ test-results/
 playwright-report/
 *.log
 .DS_Store
+
+# Python analytics and accidental nested checkouts
+.venv/
+__pycache__/
+*.py[cod]
+aws-hackathon/
+artifacts/*.joblib

@@ -1,0 +1,16 @@
+{
+  "model_used_for_forecast": "seasonal_naive",
+  "train_window": "Jul 2023 \u2013 Dec 2025  (195 row-months)",
+  "val_window": "Jan 2026 \u2013 Jun 2026",
+  "forecast_window": "Jul 2026 \u2013 Dec 2026",
+  "series_count": 10,
+  "note": "All series are based on synthetic historical data. Metrics are illustrative of model behavior, not real-world accuracy.",
+  "gradient_boosting": {
+    "val_mae": 4157.77,
+    "val_wape": 18.6
+  },
+  "seasonal_naive": {
+    "val_mae": 3110.4,
+    "val_wape": 13.91
+  }
+}

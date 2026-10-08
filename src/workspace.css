@@ -908,3 +908,7 @@ kbd {
     display: none;
   }
 }
+
+@media (max-width: 700px) {
+  .workbook-link span { display: none; }
+}

@@ -2,7 +2,8 @@ FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
-COPY index.html vite.config.js ./
+COPY index.html dashboard.html forecasting.html vite.config.js ./
+COPY frontend ./frontend
 COPY src ./src
 COPY public ./public
 RUN npm run build && npm prune --omit=dev

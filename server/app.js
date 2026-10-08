@@ -53,6 +53,7 @@ import {
 import { previewImport, commitImport } from "./imports.js";
 import { rollover } from "./rollover.js";
 import { saveAdmin, adminData } from "./admin.js";
+import { analyticsRouter } from "./analytics.js";
 
 export function createApp() {
   const app = express();
@@ -103,6 +104,7 @@ export function createApp() {
   );
   authRoutes(app);
   app.use("/api", authenticated, originGuard, csrfGuard);
+  app.use("/api/analytics", analyticsRouter());
   app.get("/api/meta", async (req, res) =>
     res.json({
       departments: req.ctx.departments,
