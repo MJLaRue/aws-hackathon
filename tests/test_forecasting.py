@@ -198,3 +198,17 @@ def test_monthly_forecast_refuses_thin_history(ds):
     for level, name in thin:
         r = run_forecast(conn, did, level, name, horizon=12, grain="month")
         assert r.points == [] and "quarterly forecast" in r.refusal
+
+
+@pytest.mark.slow
+def test_what_if_budget_is_not_cached(ds):
+    did, conn = ds("original")
+    base = run_forecast(conn, did, "department", "College of Medicine")
+    what_if = run_forecast(conn, did, "department", "College of Medicine", planned_budget_total=1_000_000.0)
+    assert what_if.planned_budget_total == 1_000_000.0
+    after = run_forecast(conn, did, "department", "College of Medicine")
+    assert after.planned_budget_total == base.planned_budget_total
+    assert after.points[0].dollar_forecast == pytest.approx(base.points[0].dollar_forecast)
+    # a row cached under an override by an older version is not served as the real answer
+    conn.execute("UPDATE forecast_results SET planned_budget_total = 1000000.0")
+    assert run_forecast(conn, did, "department", "College of Medicine").planned_budget_total == base.planned_budget_total

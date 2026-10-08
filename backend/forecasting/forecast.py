@@ -150,6 +150,7 @@ def _stl(n: int, grain: str = "quarter") -> tuple[bool, str | None]:
 
 
 def _from_cache(conn, dataset_id, level, name, horizon, budget_override, grain) -> RunForecastResponse | None:
+    """Cached rows are only valid for the dataset's own budget base; what-if overrides are never cached."""
     rows = conn.execute(
         "SELECT * FROM forecast_results WHERE dataset_id = ? AND entity_level = ? AND grain = ? AND "
         "(entity_name = ? OR (entity_name IS NULL AND ? IS NULL)) ORDER BY period_index",
@@ -158,7 +159,10 @@ def _from_cache(conn, dataset_id, level, name, horizon, budget_override, grain) 
     rows = [dict(zip(cols, r)) for r in rows][:horizon]
     if len(rows) < horizon:
         return None
-    if budget_override is not None and rows[0]["planned_budget_total"] != budget_override:
+    if budget_override is not None:
+        return None
+    current = _budget_total(conn, level, name)
+    if rows[0]["planned_budget_total"] != current:   # also discards rows cached under an override by older versions
         return None
     first = rows[0]
     obs = ratio_series(conn, level, name, grain)
@@ -251,6 +255,16 @@ def run_forecast(conn, dataset_id: str, entity_level: str, entity_name: str | No
                                  dollar_forecast=d[0], dollar_pi_80_low=d[1], dollar_pi_80_high=d[2],
                                  dollar_pi_95_low=d[3], dollar_pi_95_high=d[4]))
 
+    stl_ok, stl_note = _stl(n, grain)
+    response = RunForecastResponse(
+        entity_level=entity_level, entity_name=entity_name, grain=grain, model_name=best_name, cv_mae=cv_mae,
+        cv_smape=cv_smape, confidence_label=label, planned_budget_total=budget, periods_per_year=per_year, points=pts,
+        stl_available=stl_ok, stl_note=stl_note, dollar_forecast_available=budget is not None,
+        dollar_unavailable_reason=None if budget is not None else f"No {BUDGET_YEAR} budget found for this entity.",
+        n_quarters=n, interpolated_periods=interpolated)
+    if planned_budget_total is not None:
+        return response   # what-if budget: answer it, but keep it out of the shared cache
+
     # Persist (replace any prior rows for this entity and grain so reads are consistent).
     conn.execute("DELETE FROM forecast_results WHERE dataset_id = ? AND entity_level = ? AND grain = ? AND "
                  "(entity_name = ? OR (entity_name IS NULL AND ? IS NULL))",
@@ -267,13 +281,7 @@ def run_forecast(conn, dataset_id: str, entity_level: str, entity_name: str | No
             p.dollar_pi_80_low, p.dollar_pi_80_high, p.dollar_pi_95_low, p.dollar_pi_95_high, budget,
             best_name, cv_mae, cv_smape, label, now, grain, p.forecast_period])
 
-    stl_ok, stl_note = _stl(n, grain)
-    return RunForecastResponse(
-        entity_level=entity_level, entity_name=entity_name, grain=grain, model_name=best_name, cv_mae=cv_mae,
-        cv_smape=cv_smape, confidence_label=label, planned_budget_total=budget, periods_per_year=per_year, points=pts,
-        stl_available=stl_ok, stl_note=stl_note, dollar_forecast_available=budget is not None,
-        dollar_unavailable_reason=None if budget is not None else f"No {BUDGET_YEAR} budget found for this entity.",
-        n_quarters=n, interpolated_periods=interpolated)
+    return response
 
 
 def forecastable_entities(conn) -> list[tuple[str, str | None]]:

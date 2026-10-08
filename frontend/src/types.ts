@@ -193,9 +193,11 @@ export const usdShort = (v: number) => {
   return v < 0 ? `-${s}` : s
 }
 
+/** Text from uploaded data can start with = + - @ and run as a formula in Excel; prefix such text with a quote. Plain numbers are left alone. */
 const csvCell = (v: string | number | null | undefined) => {
-  const s = v === null || v === undefined ? '' : String(v)
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+  let s = v === null || v === undefined ? '' : String(v)
+  if (/^[=+\-@\t\r]/.test(s) && !/^[+-]?\d+(\.\d+)?$/.test(s)) s = `'${s}`
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 export const toCsv = (header: string[], rows: (string | number | null | undefined)[][]) =>
   [header, ...rows].map((r) => r.map(csvCell).join(',')).join('\n')
