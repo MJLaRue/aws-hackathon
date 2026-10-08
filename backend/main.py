@@ -17,7 +17,7 @@ from agent.loop import run_agent_loop
 from forecasting.forecast import RunForecastRequest, RunForecastResponse, run_forecast
 from replay.loader import replay_active
 from analysis.kpis import KpiResponse, get_kpis
-from analysis.dashboard import BenchmarkResponse, anomalies_view, get_benchmark, variance_view
+from analysis.dashboard import BenchmarkResponse, anomalies_view, get_benchmark, get_outlook, variance_view
 from tools.dispatcher import ToolError
 from ingestion.pipeline import (
     ColumnMappingProposal,
@@ -185,9 +185,9 @@ def anomalies(dataset_id: str, entity_level: str = "total", entity_name: str | N
 
 
 @app.get("/variance")
-def variance(dataset_id: str, entity_level: str = "total", entity_name: str | None = None) -> dict:
+def variance(dataset_id: str, entity_level: str = "total", entity_name: str | None = None, grain: str = "quarter") -> dict:
     """Dashboard trend data; same dispatcher as the explain_variance chat tool."""
-    return _view(dataset_id, variance_view, entity_level, entity_name)
+    return _view(dataset_id, variance_view, entity_level, entity_name, grain)
 
 
 @app.get("/entities")
@@ -195,6 +195,12 @@ def entities(dataset_id: str) -> dict:
     """Dimension values for dashboard selectors (same payload as the list_entities chat tool)."""
     from tools.dispatcher import dispatch_tool
     return _view(dataset_id, lambda conn, ds: dispatch_tool("list_entities", {}, conn, ds))
+
+
+@app.get("/outlook")
+def outlook(dataset_id: str) -> list[dict]:
+    """FY2027 projected spend vs the FY2026 budget for the total and every department, category and fund source."""
+    return [r.model_dump() for r in _view(dataset_id, get_outlook)]
 
 
 @app.get("/benchmark", response_model=BenchmarkResponse)
@@ -220,7 +226,7 @@ def forecast(req: RunForecastRequest) -> RunForecastResponse:
         raise HTTPException(status_code=404, detail="Unknown dataset_id")
     try:
         return run_forecast(conn, req.dataset_id, req.entity_level, req.entity_name, req.horizon,
-                            req.planned_budget_total, req.force_recompute)
+                            req.planned_budget_total, req.force_recompute, req.grain)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     finally:

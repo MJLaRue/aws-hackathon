@@ -181,7 +181,8 @@ def dispatch_tool(tool_name: str, tool_input: dict, conn, dataset_id: str) -> di
             out = RunForecastResponse(entity_level=level, entity_name=tool_input.get("entity_name"), refusal=REFUSAL)
         else:
             r = _parse(RunForecastRequest, tool_input, dataset_id)
-            out = run_forecast(conn, dataset_id, r.entity_level, r.entity_name, r.horizon, r.planned_budget_total, r.force_recompute)
+            out = run_forecast(conn, dataset_id, r.entity_level, r.entity_name, r.horizon, r.planned_budget_total, r.force_recompute,
+                             r.grain)
     elif tool_name == "detect_anomalies":
         out = _detect_anomalies(conn, _parse(DetectAnomaliesRequest, tool_input, dataset_id))
     elif tool_name == "compare_periods":
@@ -189,7 +190,7 @@ def dispatch_tool(tool_name: str, tool_input: dict, conn, dataset_id: str) -> di
     elif tool_name == "explain_variance":
         r = _parse(ExplainVarianceRequest, tool_input, dataset_id)
         out = explain_variance(conn, dataset_id, r.entity_level, r.entity_name, r.fiscal_year, r.fiscal_quarter,
-                               r.period_index_from, r.period_index_to)
+                               r.period_index_from, r.period_index_to, r.grain)
     else:  # get_reporting_health
         r = _parse(GetReportingHealthRequest, tool_input, dataset_id)
         out = get_reporting_health(conn, dataset_id, r.grouping, r.entity_name)

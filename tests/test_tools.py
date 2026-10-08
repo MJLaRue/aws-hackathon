@@ -362,6 +362,11 @@ def test_dashboard_endpoints(client, sample_dataset):
     b = client.get("/benchmark", params=p).json()
     assert b["mean_gap"] is not None and b["caveat"] and "not used as a model input" in b["caveat"]
     assert (b["mean_gap"] < 5) == ("unusually close" in b["caveat"])
+    mc = b["model_comparison"]
+    assert mc and sum(m["selected"] for m in mc) == 1 and mc[0]["selected"] and mc == sorted(mc, key=lambda m: m["cv_mae"])
+    assert mc[0]["model"] == b["model_name"] and mc[0]["cv_mae"] == pytest.approx(b["cv_mae"])
+    assert sum(g["rows"] for g in b["gap_histogram"]) == b["source_rows_compared"]
+    assert 0 <= b["gap_under_1pct_share"] <= 1 and b["gap_median"] <= b["max_gap"]
     assert client.get("/benchmark", params={"dataset_id": "nope"}).status_code == 404
     assert client.get("/anomalies", params={**p, "entity_level": "bogus"}).status_code == 422
 

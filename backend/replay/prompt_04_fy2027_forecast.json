@@ -12,68 +12,74 @@
     "entity_level": "total",
     "entity_name": null,
     "entity_not_found": false,
+    "grain": "quarter",
     "model_name": "SeasonalNaive",
     "cv_mae": 0.05072427258134285,
     "cv_smape": 5.192803534987855,
     "confidence_label": "Medium",
     "forecast_target": "spend-vs-budget ratio",
     "planned_budget_total": 10738669.400000004,
+    "periods_per_year": 4,
     "points": [
      {
       "forecast_quarter": "FY2027 Q1",
+      "forecast_period": "FY2027 Q1",
       "period_index": 13,
       "ratio_forecast": 1.0103369946884408,
       "pi_80_low": 0.9474398590748173,
       "pi_80_high": 1.1021629614777162,
       "pi_95_low": 0.9262667833649948,
       "pi_95_high": 1.1486257581299488,
-      "dollar_forecast": 10849674.968548726,
-      "dollar_pi_80_low": 10174243.422987057,
-      "dollar_pi_80_high": 11835763.668234134,
-      "dollar_pi_95_low": 9946872.762758102,
-      "dollar_pi_95_high": 12334712.280881887
+      "dollar_forecast": 2712418.7421371816,
+      "dollar_pi_80_low": 2543560.855746764,
+      "dollar_pi_80_high": 2958940.9170585335,
+      "dollar_pi_95_low": 2486718.1906895256,
+      "dollar_pi_95_high": 3083678.070220472
      },
      {
       "forecast_quarter": "FY2027 Q2",
+      "forecast_period": "FY2027 Q2",
       "period_index": 14,
       "ratio_forecast": 1.03843536411814,
       "pi_80_low": 0.9745430967038152,
       "pi_80_high": 1.1336059361093225,
       "pi_95_low": 0.9516261593782287,
       "pi_95_high": 1.1767170159642495,
-      "dollar_forecast": 11151414.068533333,
-      "dollar_pi_80_low": 10465296.131554505,
-      "dollar_pi_80_high": 12173419.377755541,
-      "dollar_pi_95_low": 10219198.71795451,
-      "dollar_pi_95_high": 12636375.011794602
+      "dollar_forecast": 2787853.5171333333,
+      "dollar_pi_80_low": 2616324.032888626,
+      "dollar_pi_80_high": 3043354.8444388853,
+      "dollar_pi_95_low": 2554799.6794886277,
+      "dollar_pi_95_high": 3159093.7529486506
      },
      {
       "forecast_quarter": "FY2027 Q3",
+      "forecast_period": "FY2027 Q3",
       "period_index": 15,
       "ratio_forecast": 0.9105174451528905,
       "pi_80_low": 0.8463153940796785,
       "pi_80_high": 0.9968359003373611,
       "pi_95_low": 0.8247414810156208,
       "pi_95_high": 1.0434319460407275,
-      "dollar_forecast": 9777745.826429527,
-      "dollar_pi_80_low": 9088301.225152388,
-      "dollar_pi_80_high": 10704691.179774273,
-      "dollar_pi_95_low": 8856626.105093133,
-      "dollar_pi_95_high": 11205070.709930016
+      "dollar_forecast": 2444436.456607382,
+      "dollar_pi_80_low": 2272075.306288097,
+      "dollar_pi_80_high": 2676172.7949435683,
+      "dollar_pi_95_low": 2214156.526273283,
+      "dollar_pi_95_high": 2801267.677482504
      },
      {
       "forecast_quarter": "FY2027 Q4",
+      "forecast_period": "FY2027 Q4",
       "period_index": 16,
       "ratio_forecast": 1.0370593899554936,
       "pi_80_low": 0.9770240676947948,
       "pi_80_high": 1.133379093929487,
       "pi_95_low": 0.9569258142259783,
       "pi_95_high": 1.175022745356366,
-      "dollar_forecast": 11136637.93689773,
-      "dollar_pi_80_low": 10491938.458817625,
-      "dollar_pi_80_high": 12170983.394580312,
-      "dollar_pi_95_low": 10276109.959298601,
-      "dollar_pi_95_high": 12618180.799862403
+      "dollar_forecast": 2784159.4842244326,
+      "dollar_pi_80_low": 2622984.6147044064,
+      "dollar_pi_80_high": 3042745.848645078,
+      "dollar_pi_95_low": 2569027.4898246503,
+      "dollar_pi_95_high": 3154545.199965601
      }
     ],
     "stl_available": true,
@@ -82,6 +88,7 @@
     "dollar_unavailable_reason": null,
     "refusal": null,
     "n_quarters": 12,
+    "interpolated_periods": 0,
     "prediction_interval_levels": [
      80,
      95
@@ -89,6 +96,6 @@
    }
   }
  ],
- "assistant_text": "The forecast is the spend-to-budget ratio, where a value above parity means over budget. The ratio forecasts are FY2027 Q1 at 1.01, FY2027 Q2 at 1.04, FY2027 Q3 at 0.91, and FY2027 Q4 at 1.04. For FY2027 Q1, the dollar forecast is $10,849,675 against a planned budget base of $10,738,669, with an 80% interval of $10,174,243 to $11,835,764 and a 95% interval of $9,946,873 to $12,334,712. The selected model is SeasonalNaive, with cross-validated error of 0.051 MAE and 5.2% sMAPE. Confidence is Medium. Caveat: the history is short, only a few validation folds were possible, and the intervals are bootstrap-based, so treat them as approximate rather than guaranteed coverage.",
+ "assistant_text": "The forecast is the spend-to-budget ratio, where a value above parity means over budget. The ratio forecasts are FY2027 Q1 at 1.01, FY2027 Q2 at 1.04, FY2027 Q3 at 0.91, and FY2027 Q4 at 1.04. For FY2027 Q1, the dollar forecast is $2,712,419 against a planned budget base of $10,738,669, with an 80% interval of $2,543,561 to $2,958,941 and a 95% interval of $2,486,718 to $3,083,678. The selected model is SeasonalNaive, with cross-validated error of 0.051 MAE and 5.2% sMAPE. Confidence is Medium. Caveat: the history is short, only a few validation folds were possible, and the intervals are bootstrap-based, so treat them as approximate rather than guaranteed coverage.",
  "grounding_check": "pass"
 }

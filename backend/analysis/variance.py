@@ -118,18 +118,25 @@ class ExplainVarianceResponse(BaseModel):
     quarterly_time_series: list[dict]
     stl_available: bool = False
     stl_note: str | None = None
+    grain: str = "quarter"
+    monthly_available: bool = False   # False when the dataset has no month column
 
 
 STL_MIN_QUARTERS = 8
+STL_MIN_MONTHS = 24
 
 
-def _attach_stl(series: list[dict]) -> tuple[bool, str | None]:
-    """Gate STL at >=8 quarters (§3.6); when eligible add stl_trend/stl_seasonal (period 4) to each point."""
+def _attach_stl(series: list[dict], grain: str = "quarter") -> tuple[bool, str | None]:
+    """Gate STL at two full seasons (§3.6): >=8 quarters (period 4) or >=24 months (period 12).
+
+    When eligible add stl_trend/stl_seasonal to each point.
+    """
     n = len(series)
-    if n < STL_MIN_QUARTERS:
-        return False, f"STL decomposition unavailable: only {n} quarters of data (minimum {STL_MIN_QUARTERS} required)."
+    period, need, unit = (12, STL_MIN_MONTHS, "months") if grain == "month" else (4, STL_MIN_QUARTERS, "quarters")
+    if n < need:
+        return False, f"STL decomposition unavailable: only {n} {unit} of data (minimum {need} required)."
     from statsmodels.tsa.seasonal import STL
-    fit = STL(np.array([p["variance_pct_agg"] for p in series]), period=4, robust=True).fit()
+    fit = STL(np.array([p["variance_pct_agg"] for p in series]), period=period, robust=True).fit()
     for p, t, sv in zip(series, fit.trend, fit.seasonal):
         p["stl_trend"], p["stl_seasonal"] = float(t), float(sv)
     return True, None
@@ -184,7 +191,8 @@ def filter_scope(df: pd.DataFrame, entity_level: str, entity_name: str | None = 
 
 def explain_variance(conn, dataset_id: str, entity_level: str, entity_name: str | None = None,
                      fiscal_year: str | None = None, fiscal_quarter: str | None = None,
-                     period_index_from: int | None = None, period_index_to: int | None = None) -> ExplainVarianceResponse:
+                     period_index_from: int | None = None, period_index_to: int | None = None,
+                     grain: str = "quarter") -> ExplainVarianceResponse:
     f = dict(fiscal_year=fiscal_year, fiscal_quarter=fiscal_quarter,
              period_index_from=period_index_from, period_index_to=period_index_to)
     desc = _period_desc(fiscal_year, fiscal_quarter, period_index_from, period_index_to)
@@ -230,17 +238,30 @@ def explain_variance(conn, dataset_id: str, entity_level: str, entity_name: str 
         variance_pct=float(r.variance_pct) if pd.notna(r.variance_pct) else 0.0,
         is_persistent_pattern=bool(r.is_persistent)) for r in top.itertuples()]
 
-    ts = (df[df["period_index"].notna()].groupby(["period_index", "fiscal_year", "fiscal_quarter"])[["actual", "budget"]]
-          .sum().reset_index().sort_values("period_index"))
-    series = [{"period_index": int(r.period_index), "fiscal_year": r.fiscal_year, "fiscal_quarter": r.fiscal_quarter,
-               "actual": float(r.actual), "budget": float(r.budget),
-               "variance_pct_agg": float((r.actual / r.budget - 1) * 100) if r.budget else 0.0}
-              for r in ts.itertuples()]
+    has_month = bool(all_df["month"].notna().any())
+    if grain == "month" and has_month:
+        m = df[df["month"].notna()].assign(month=lambda d: pd.to_datetime(d["month"]))
+        ts = (m.groupby(["month", "fiscal_year", "fiscal_quarter"])[["actual", "budget"]].sum().reset_index()
+              .sort_values("month"))
+        origin = pd.Timestamp("2023-07-01")   # month 1 = first month of FY2024
+        series = [{"period_index": (r.month.year - origin.year) * 12 + r.month.month - origin.month + 1,
+                   "month": r.month.date().isoformat(), "fiscal_year": r.fiscal_year, "fiscal_quarter": r.fiscal_quarter,
+                   "actual": float(r.actual), "budget": float(r.budget),
+                   "variance_pct_agg": float((r.actual / r.budget - 1) * 100) if r.budget else 0.0}
+                  for r in ts.itertuples()]
+    else:
+        grain = "quarter"
+        ts = (df[df["period_index"].notna()].groupby(["period_index", "fiscal_year", "fiscal_quarter"])[["actual", "budget"]]
+              .sum().reset_index().sort_values("period_index"))
+        series = [{"period_index": int(r.period_index), "fiscal_year": r.fiscal_year, "fiscal_quarter": r.fiscal_quarter,
+                   "actual": float(r.actual), "budget": float(r.budget),
+                   "variance_pct_agg": float((r.actual / r.budget - 1) * 100) if r.budget else 0.0}
+                  for r in ts.itertuples()]
 
-    stl_ok, stl_note = _attach_stl(series)
+    stl_ok, stl_note = _attach_stl(series, grain)
 
     return ExplainVarianceResponse(
-        stl_available=stl_ok, stl_note=stl_note,
+        stl_available=stl_ok, stl_note=stl_note, grain=grain, monthly_available=has_month,
         entity_level=entity_level, entity_name=entity_name, period_description=desc,
         total_variance_usd=tot_a - tot_b, total_variance_pct=(tot_a / tot_b - 1) * 100 if tot_b else 0.0,
         top_department_contributors=_contrib(grouped("department"), "department", 5),

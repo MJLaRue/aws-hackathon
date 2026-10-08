@@ -90,12 +90,18 @@
             "type": "string",
             "description": "Entity name; omit or use 'total' for the aggregate total."
           },
+          "grain": {
+            "type": "string",
+            "enum": ["quarter", "month"],
+            "default": "quarter",
+            "description": "Forecast period: quarterly (FY2027 Q1-Q4) or monthly (Jul 2026 onward). Use month only when the user asks for monthly figures."
+          },
           "horizon": {
             "type": "integer",
             "default": 4,
             "minimum": 1,
-            "maximum": 8,
-            "description": "Number of quarters to forecast ahead"
+            "maximum": 24,
+            "description": "Number of periods (quarters or months, per grain) to forecast ahead; 4 quarters or 12 months covers FY2027"
           },
           "planned_budget_total": {
             "type": "number",
@@ -249,6 +255,12 @@
           },
           "period_index_to": {
             "type": "integer"
+          },
+          "grain": {
+            "type": "string",
+            "enum": ["quarter", "month"],
+            "default": "quarter",
+            "description": "Grain of quarterly_time_series; month needs a dataset with a month column"
           }
         },
         "required": [

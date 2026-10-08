@@ -211,7 +211,9 @@
       "fiscal_quarter": "Q1",
       "actual": 709008.43,
       "budget": 616569.08,
-      "variance_pct_agg": 14.992537413650409
+      "variance_pct_agg": 14.992537413650409,
+      "stl_trend": 11.559192188020425,
+      "stl_seasonal": 3.4333452256299815
      },
      {
       "period_index": 2,
@@ -219,7 +221,9 @@
       "fiscal_quarter": "Q2",
       "actual": 163838.74,
       "budget": 143758.69,
-      "variance_pct_agg": 13.967886045706157
+      "variance_pct_agg": 13.967886045706157,
+      "stl_trend": 10.978834347639404,
+      "stl_seasonal": 2.9890516980667505
      },
      {
       "period_index": 3,
@@ -227,7 +231,9 @@
       "fiscal_quarter": "Q3",
       "actual": 314015.36,
       "budget": 280575.87,
-      "variance_pct_agg": 11.918163169199115
+      "variance_pct_agg": 11.918163169199115,
+      "stl_trend": 10.39847650725838,
+      "stl_seasonal": 1.5196866619407337
      },
      {
       "period_index": 4,
@@ -235,7 +241,9 @@
       "fiscal_quarter": "Q4",
       "actual": 72434.7,
       "budget": 70004.32,
-      "variance_pct_agg": 3.471757171557388
+      "variance_pct_agg": 3.471757171557388,
+      "stl_trend": 9.818118666877353,
+      "stl_seasonal": -6.346361495319966
      },
      {
       "period_index": 5,
@@ -243,7 +251,9 @@
       "fiscal_quarter": "Q1",
       "actual": 283739.96,
       "budget": 255649.76,
-      "variance_pct_agg": 10.987767013745685
+      "variance_pct_agg": 10.987767013745685,
+      "stl_trend": 9.23776082649633,
+      "stl_seasonal": 4.434007014309879
      },
      {
       "period_index": 6,
@@ -251,7 +261,9 @@
       "fiscal_quarter": "Q2",
       "actual": 409294.23,
       "budget": 333186.52999999997,
-      "variance_pct_agg": 22.842370008175305
+      "variance_pct_agg": 22.842370008175305,
+      "stl_trend": 9.466406198958412,
+      "stl_seasonal": 0.26119511636083836
      },
      {
       "period_index": 7,
@@ -259,7 +271,9 @@
       "fiscal_quarter": "Q3",
       "actual": 583834.7,
       "budget": 552295.3200000001,
-      "variance_pct_agg": 5.710600625766649
+      "variance_pct_agg": 5.710600625766649,
+      "stl_trend": 9.287208599402154,
+      "stl_seasonal": -2.4094739019571327
      },
      {
       "period_index": 8,
@@ -267,7 +281,9 @@
       "fiscal_quarter": "Q4",
       "actual": 41808.07,
       "budget": 42899.59,
-      "variance_pct_agg": -2.5443599810627493
+      "variance_pct_agg": -2.5443599810627493,
+      "stl_trend": 8.46583913426903,
+      "stl_seasonal": -0.6900061383960846
      },
      {
       "period_index": 9,
@@ -275,7 +291,9 @@
       "fiscal_quarter": "Q1",
       "actual": 83149.54000000001,
       "budget": 72757.89,
-      "variance_pct_agg": 14.282505993508066
+      "variance_pct_agg": 14.282505993508066,
+      "stl_trend": 8.847837190518284,
+      "stl_seasonal": 5.434668802989775
      },
      {
       "period_index": 10,
@@ -283,7 +301,9 @@
       "fiscal_quarter": "Q2",
       "actual": 169598.96,
       "budget": 158855.3,
-      "variance_pct_agg": 6.76317378142246
+      "variance_pct_agg": 6.76317378142246,
+      "stl_trend": 9.22983524676753,
+      "stl_seasonal": -2.4666614653450756
      },
      {
       "period_index": 11,
@@ -291,7 +311,9 @@
       "fiscal_quarter": "Q3",
       "actual": 53038.12,
       "budget": 51357.1,
-      "variance_pct_agg": 3.2731988371617726
+      "variance_pct_agg": 3.2731988371617726,
+      "stl_trend": 9.611833303016775,
+      "stl_seasonal": -6.338634465854999
      },
      {
       "period_index": 12,
@@ -299,9 +321,15 @@
       "fiscal_quarter": "Q4",
       "actual": 1045117.8200000001,
       "budget": 909112.89,
-      "variance_pct_agg": 14.960180577793825
+      "variance_pct_agg": 14.960180577793825,
+      "stl_trend": 9.993831359266029,
+      "stl_seasonal": 4.966349218527802
      }
-    ]
+    ],
+    "stl_available": true,
+    "stl_note": null,
+    "grain": "quarter",
+    "monthly_available": true
    }
   },
   {

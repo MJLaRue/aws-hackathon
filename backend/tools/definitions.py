@@ -172,3 +172,4 @@ class ExplainVarianceRequest(BaseModel):
     fiscal_quarter: str | None = None
     period_index_from: int | None = None
     period_index_to: int | None = None
+    grain: Literal["quarter", "month"] = "quarter"

@@ -97,21 +97,25 @@ class Drift:
 class SeasonalNaive:
     name = "SeasonalNaive"
 
+    def __init__(self, season: int = SEASON):
+        self.season = season
+
     def fit(self, y):
         self.y = np.asarray(y, float)
-        if len(self.y) < MIN_SEASONAL_QUARTERS:
-            raise ValueError(f"SeasonalNaive requires >= {MIN_SEASONAL_QUARTERS} quarters, got {len(self.y)}")
+        if len(self.y) < 2 * self.season:
+            raise ValueError(f"SeasonalNaive requires >= {2 * self.season} periods, got {len(self.y)}")
         return self
 
     def forecast(self, h, intervals=True):
         n = len(self.y)
         steps = np.arange(1, h + 1)
-        point = np.array([self.y[n - SEASON + ((k - 1) % SEASON)] for k in steps])
+        season = self.season
+        point = np.array([self.y[n - season + ((k - 1) % season)] for k in steps])
         if not intervals:
             return ForecastResult(point, point, point, point, point)
         rng = np.random.default_rng(SEED)
-        resid = self.y[SEASON:] - self.y[:-SEASON]
-        return _from_paths(point, _bootstrap_walk(point, resid, np.ceil(steps / SEASON), rng))
+        resid = self.y[season:] - self.y[:-season]
+        return _from_paths(point, _bootstrap_walk(point, resid, np.ceil(steps / season), rng))
 
 
 class LinearTrend:
@@ -169,6 +173,11 @@ class ETSDampedTrend:
 ALL_MODELS = (Naive, SeasonalNaive, Drift, ETSDampedTrend, LinearTrend)
 
 
-def available_models(n_quarters: int) -> list:
-    """Model classes permitted for a series of this length (SeasonalNaive needs >= 8 quarters)."""
-    return [m for m in ALL_MODELS if m is not SeasonalNaive or n_quarters >= MIN_SEASONAL_QUARTERS]
+def available_models(n_periods: int, season: int = SEASON) -> list:
+    """Model classes permitted for a series of this length (SeasonalNaive needs two full seasons: 8 quarters, 24 months)."""
+    return [m for m in ALL_MODELS if m is not SeasonalNaive or n_periods >= 2 * season]
+
+
+def make_model(cls, season: int = SEASON):
+    """Instantiate a model; only SeasonalNaive depends on the seasonal period."""
+    return cls(season) if cls is SeasonalNaive else cls()

@@ -76,7 +76,8 @@ def test_run_forecast_total(ds):
     assert all(p.dollar_forecast is not None and p.dollar_pi_95_low is not None for p in r.points)
     assert r.dollar_forecast_available and r.stl_available and r.n_quarters == 12
     p = r.points[0]
-    assert p.dollar_forecast == pytest.approx(p.ratio_forecast * r.planned_budget_total)
+    assert r.periods_per_year == 4 and p.forecast_period == p.forecast_quarter
+    assert p.dollar_forecast == pytest.approx(p.ratio_forecast * r.planned_budget_total / 4)  # one quarter of the annual base
 
 
 @pytest.mark.slow
@@ -106,7 +107,7 @@ def test_forecast_persisted_and_cached(ds):
     b = run_forecast(conn, did, "department", "College of Medicine")
     assert a.model_dump() == b.model_dump()
     c = run_forecast(conn, did, "department", "College of Medicine", planned_budget_total=1_000_000.0)
-    assert c.planned_budget_total == 1_000_000.0 and c.points[0].dollar_forecast == pytest.approx(c.points[0].ratio_forecast * 1e6)
+    assert c.planned_budget_total == 1_000_000.0 and c.points[0].dollar_forecast == pytest.approx(c.points[0].ratio_forecast * 1e6 / 4)
     assert conn.execute("SELECT COUNT(*) FROM forecast_results").fetchone()[0] == 4
 
 
@@ -131,3 +132,69 @@ def test_travel_conferences_no_seasonal_naive(ds):
     assert len(ratio_series(conn, "category", "Travel & Conferences")) == 7
     r = run_forecast(conn, did, "category", "Travel & Conferences")
     assert r.model_name != "SeasonalNaive" and r.confidence_label == "Low" and not r.stl_available
+
+
+def test_seasonal_naive_monthly_needs_24_months_and_repeats_last_year():
+    y = np.tile(SYN, 2)[:24] + np.arange(24) * 0.001
+    with pytest.raises(ValueError):
+        SeasonalNaive(12).fit(y[:23])
+    assert SeasonalNaive not in available_models(23, 12) and SeasonalNaive in available_models(24, 12)
+    pt = SeasonalNaive(12).fit(y).forecast(12, intervals=False).point
+    assert pt.tolist() == y[12:].tolist()
+
+
+def test_monthly_cv_uses_24_month_training_window():
+    y = np.tile(SYN, 3)
+    assert rolling_origin_cv(y[:24], min_train=24, season=12) == {}
+    cv = rolling_origin_cv(y, min_train=24, season=12)
+    assert cv["SeasonalNaive"]["folds"] == 4 and select_best(cv) in cv
+
+
+def test_month_labels():
+    from forecasting.forecast import month_label, month_quarter
+    assert month_label(1) == "Jul 2023" and month_label(36) == "Jun 2026" and month_label(37) == "Jul 2026"
+    assert month_quarter(37) == "FY2027 Q1" and month_quarter(48) == "FY2027 Q4"
+
+
+@pytest.mark.slow
+def test_monthly_forecast_total(ds):
+    did, conn = ds("enhanced")
+    r = run_forecast(conn, did, "total", horizon=12, grain="month")
+    assert r.grain == "month" and r.n_quarters == 36 and r.periods_per_year == 12 and len(r.points) == 12
+    assert [p.forecast_period for p in r.points][:2] == ["Jul 2026", "Aug 2026"] and r.points[-1].forecast_period == "Jun 2027"
+    assert r.points[0].forecast_quarter == "FY2027 Q1" and r.points[3].forecast_quarter == "FY2027 Q2"
+    assert r.stl_available and r.confidence_label in ("High", "Medium", "Low")
+    p = r.points[0]
+    assert p.dollar_forecast == pytest.approx(p.ratio_forecast * r.planned_budget_total / 12)
+    assert 0.5e6 < p.dollar_forecast < 1.5e6   # a month of ~$10.7M/yr, not a year
+    # quarterly and monthly caches coexist
+    q = run_forecast(conn, did, "total")
+    assert q.grain == "quarter" and len(q.points) == 4
+    assert run_forecast(conn, did, "total", horizon=12, grain="month").model_dump() == r.model_dump()
+
+
+@pytest.mark.slow
+def test_monthly_forecast_refused_without_month_column(ds):
+    did, conn = ds("original")
+    r = run_forecast(conn, did, "total", grain="month")
+    assert r.points == [] and "month column" in r.refusal
+
+
+@pytest.mark.slow
+def test_monthly_forecast_interpolates_gaps_and_reports_them(ds):
+    did, conn = ds("enhanced")
+    obs = ratio_series(conn, "department", "College of Medicine", "month")
+    assert len(obs) < 36   # this department really has gaps
+    r = run_forecast(conn, did, "department", "College of Medicine", horizon=12, grain="month")
+    assert len(r.points) == 12 and r.n_quarters == 36 and r.interpolated_periods == 36 - len(obs) > 0
+    again = run_forecast(conn, did, "department", "College of Medicine", horizon=12, grain="month")
+    assert again.interpolated_periods == r.interpolated_periods and again.model_dump() == r.model_dump()
+
+
+@pytest.mark.slow
+def test_monthly_forecast_refuses_thin_history(ds):
+    did, conn = ds("enhanced")
+    thin = [(l, n) for l, n in forecastable_entities(conn) if len(ratio_series(conn, l, n, "month")) < 24]
+    for level, name in thin:
+        r = run_forecast(conn, did, level, name, horizon=12, grain="month")
+        assert r.points == [] and "quarterly forecast" in r.refusal
