@@ -57,6 +57,13 @@ const navigation = [
   ["admin", "Administration", Settings, "admin"],
 ];
 const titles = Object.fromEntries(navigation.map(([id, title]) => [id, title]));
+const navigationGroups = [
+  [
+    "Workspace",
+    ["overview", "budget", "expenses", "drafts", "commitments", "salaries"],
+  ],
+  ["Manage", ["imports", "notes", "audit", "archives", "admin"]],
+];
 const descriptions = {
   overview: "Your department’s finances, in focus.",
   budget: "Opening budgets, live adjustments, and the plan ahead.",
@@ -163,8 +170,10 @@ function Stat({ label, value, detail, icon: Icon = Wallet, accent = false }) {
   return (
     <div className={`stat ${accent ? "stat-accent" : ""}`}>
       <div className="stat-label">
-        {label}
-        <Icon size={17} />
+        <span>{label}</span>
+        <span className="stat-icon">
+          <Icon size={18} />
+        </span>
       </div>
       <strong>{value}</strong>
       <div className="stat-detail">{detail}</div>
@@ -353,8 +362,8 @@ function Chart({ monthly }) {
         >
           <defs>
             <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#8dbb75" stopOpacity=".25" />
-              <stop offset="100%" stopColor="#8dbb75" stopOpacity="0" />
+              <stop offset="0%" stopColor="#10b981" stopOpacity=".22" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
             </linearGradient>
           </defs>
           {[20, 95, 178].map((y) => (
@@ -375,7 +384,7 @@ function Chart({ monthly }) {
           <polyline
             points={points}
             fill="none"
-            stroke="#4d7759"
+            stroke="#059669"
             strokeWidth="3"
             strokeLinejoin="round"
           />
@@ -385,7 +394,7 @@ function Chart({ monthly }) {
               cx={24 + (i * (w - 48)) / 11}
               cy={h - 12 - (v / max) * (h - 32)}
               r="4"
-              fill="#4d7759"
+              fill="#059669"
               stroke="white"
               strokeWidth="2"
             >
@@ -856,90 +865,145 @@ function Budget({
       </div>
       <Status state={state}>
         {state.data && (
-          <section className="card">
-            <div className="card-header">
-              <div>
-                <h2>Department budget matrix</h2>
-                <p>
-                  Amounts in USD ·{" "}
-                  {mode === "draft"
-                    ? "With pending draft overlays"
-                    : "Live budget"}
-                </p>
+          <>
+            <div className="stats-grid three budget-summary">
+              <Stat
+                label="Opening allocation"
+                value={money(state.data.totals.base_amount)}
+                detail="Your approved starting budget"
+                icon={Wallet}
+              />
+              <Stat
+                label="Net adjustments"
+                value={money(state.data.totals.adjustments)}
+                detail={
+                  mode === "draft"
+                    ? "Includes pending draft changes"
+                    : "Signed changes to the live plan"
+                }
+                icon={TrendingUp}
+              />
+              <Stat
+                label="Planned budget"
+                value={money(state.data.totals.planned_budget)}
+                detail="Opening allocation + adjustments"
+                icon={CircleDollarSign}
+                accent
+              />
+            </div>
+            <section className="card budget-matrix">
+              <div className="card-header">
+                <div>
+                  <div className="section-kicker">ALLOCATION BREAKDOWN</div>
+                  <h2>Department budget matrix</h2>
+                  <p>
+                    {state.data.rows.length} accounts · Amounts in USD ·{" "}
+                    {mode === "draft"
+                      ? "With pending draft overlays"
+                      : "Live budget"}
+                  </p>
+                </div>
+                <Badge tone={mode === "draft" ? "amber" : "green"}>
+                  {mode === "draft" ? "Draft preview" : "Live"}
+                </Badge>
               </div>
-              <Badge tone={mode === "draft" ? "amber" : "green"}>
-                {mode === "draft" ? "Draft preview" : "Live"}
-              </Badge>
-            </div>
-            <div className="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Banner account</th>
-                    <th className="numeric">Opening base</th>
-                    <th className="numeric">Adjustments</th>
-                    <th className="numeric">Planned budget</th>
-                    <th>Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.data.rows.map((row) => (
-                    <tr key={row.account_code}>
-                      <td>
-                        <strong>{row.category_name}</strong>
-                        <small className="cell-meta">
-                          {row.account_code} · {row.group_type}
-                        </small>
-                      </td>
-                      <td className="numeric">{exactMoney(row.base_amount)}</td>
-                      <td
-                        className={`numeric ${Number(row.adjustments) > 0 ? "positive" : ""}`}
-                      >
-                        {Number(row.adjustments) > 0 ? "+" : ""}
-                        {exactMoney(row.adjustments)}
-                      </td>
-                      <td className="numeric emphasis">
-                        {exactMoney(row.planned_budget)}
-                      </td>
-                      <td>
-                        <div className="row-actions">
-                          <button
-                            aria-label={`View ${row.category_name}`}
-                            onClick={() => open({ kind: "line", row })}
-                          >
-                            <MessageSquare size={16} />
-                          </button>
-                          {can("budgets", true) && !readOnly && (
-                            <button
-                              aria-label={`Edit base for ${row.category_name}`}
-                              onClick={() => open({ kind: "base", row })}
-                            >
-                              <Pencil size={15} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
+              <div
+                className="table-scroll"
+                tabIndex={0}
+                role="region"
+                aria-label="Department budget matrix accounts"
+              >
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Banner account</th>
+                      <th className="numeric">Opening base</th>
+                      <th className="numeric">Adjustments</th>
+                      <th className="numeric">Planned budget</th>
+                      <th>Details</th>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td>Total allocation</td>
-                    <td className="numeric">
-                      {exactMoney(state.data.totals.base_amount)}
-                    </td>
-                    <td className="numeric">
-                      {exactMoney(state.data.totals.adjustments)}
-                    </td>
-                    <td className="numeric">
-                      {exactMoney(state.data.totals.planned_budget)}
-                    </td>
-                    <td />
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </section>
+                  </thead>
+                  <tbody>
+                    {state.data.rows.map((row) => (
+                      <tr key={row.account_code}>
+                        <td>
+                          <div className="account-cell">
+                            <span
+                              className={`account-icon ${row.group_type === "Personnel" ? "personnel" : ""}`}
+                            >
+                              {row.group_type === "Personnel" ? (
+                                <Users size={18} />
+                              ) : (
+                                <Landmark size={18} />
+                              )}
+                            </span>
+                            <div>
+                              <strong>{row.category_name}</strong>
+                              <small className="cell-meta">
+                                {row.account_code} · {row.group_type}
+                              </small>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="numeric">
+                          {exactMoney(row.base_amount)}
+                        </td>
+                        <td
+                          className={`numeric ${Number(row.adjustments) > 0 ? "positive" : Number(row.adjustments) < 0 ? "negative" : ""}`}
+                        >
+                          {Number(row.adjustments) > 0 ? "+" : ""}
+                          {exactMoney(row.adjustments)}
+                        </td>
+                        <td className="numeric emphasis">
+                          {exactMoney(row.planned_budget)}
+                          <div className="allocation-track" aria-hidden="true">
+                            <span
+                              style={{
+                                width: `${Math.min(100, Math.max(0, (Number(row.planned_budget) / Math.max(1, Number(state.data.totals.planned_budget))) * 100))}%`,
+                              }}
+                            />
+                          </div>
+                        </td>
+                        <td>
+                          <div className="row-actions">
+                            <button
+                              aria-label={`View ${row.category_name}`}
+                              onClick={() => open({ kind: "line", row })}
+                            >
+                              <MessageSquare size={16} />
+                            </button>
+                            {can("budgets", true) && !readOnly && (
+                              <button
+                                aria-label={`Edit base for ${row.category_name}`}
+                                onClick={() => open({ kind: "base", row })}
+                              >
+                                <Pencil size={15} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td>Total allocation</td>
+                      <td className="numeric">
+                        {exactMoney(state.data.totals.base_amount)}
+                      </td>
+                      <td className="numeric">
+                        {exactMoney(state.data.totals.adjustments)}
+                      </td>
+                      <td className="numeric">
+                        {exactMoney(state.data.totals.planned_budget)}
+                      </td>
+                      <td />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+          </>
         )}
       </Status>
       <section className="card section-gap">
@@ -2926,7 +2990,6 @@ function App() {
                 <X size={20} />
               </button>
             </div>
-            <div className="workspace-label">UIC</div>
             <div className="sidebar-context">
               <span className="uic-mark">UIC</span>
               <div>
@@ -2934,24 +2997,33 @@ function App() {
                 <small>Department finance</small>
               </div>
             </div>
-            <div className="nav-label">WORKSPACE</div>
-            <nav>
-              {navigation
-                .filter(
-                  (x) => can(x[3]) && (x[0] !== "overview" || can("expenses")),
-                )
-                .map(([id, title, Icon]) => (
-                  <button
-                    key={id}
-                    className={page === id ? "active" : ""}
-                    aria-current={page === id ? "page" : undefined}
-                    onClick={() => go(id)}
-                  >
-                    <Icon size={18} />
-                    {title}
-                    {page === id && <span className="nav-dot" />}
-                  </button>
-                ))}
+            <nav aria-label="Main navigation">
+              {navigationGroups.map(([group, ids]) => {
+                const items = navigation.filter(
+                  (x) =>
+                    ids.includes(x[0]) &&
+                    can(x[3]) &&
+                    (x[0] !== "overview" || can("expenses")),
+                );
+                if (!items.length) return null;
+                return (
+                  <div className="nav-group" key={group}>
+                    <div className="nav-label">{group}</div>
+                    {items.map(([id, title, Icon]) => (
+                      <button
+                        key={id}
+                        className={page === id ? "active" : ""}
+                        aria-current={page === id ? "page" : undefined}
+                        onClick={() => go(id)}
+                      >
+                        <Icon size={18} />
+                        {title}
+                        {page === id && <span className="nav-dot" />}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })}
             </nav>
             <div className="sidebar-bottom">
               <div className="ai-coming">
@@ -3003,6 +3075,9 @@ function App() {
                 <strong>{titles[page] || "Overview"}</strong>
               </div>
               <div className="topbar-right">
+                <span className="workspace-secure">
+                  <ShieldCheck size={15} /> UIC workspace
+                </span>
                 {meta?.synthetic_data && (
                   <Badge tone="amber">Synthetic demo data</Badge>
                 )}
