@@ -40,17 +40,20 @@ export default function App() {
 
   return (
     <div className="app">
-      <header>
-        <h1>Budget Forecasting Analyst</h1>
-        <label>Dataset{' '}
+      <header className="masthead">
+        <div className="brand">
+          <span className="brand-org">University of Illinois Chicago</span>
+          <h1>Budget Forecasting Analyst</h1>
+        </div>
+        <label className="field on-navy">Dataset{' '}
           <select value={active ?? ''} onChange={(e) => setActive(e.target.value || null)} disabled={!datasets.length}>
             {!datasets.length && <option value="">No datasets</option>}
             {datasets.map((d) => <option key={d.dataset_id} value={d.dataset_id}>{d.name} ({d.row_count} rows)</option>)}
           </select>
         </label>
         <nav>
-          <button type="button" onClick={() => go('/upload')} disabled={showUpload}>Upload</button>{' '}
-          <button type="button" onClick={() => go('/dashboard')} disabled={!active || !showUpload}>Dashboard</button>
+          <button type="button" className="on-dark" onClick={() => go('/upload')} disabled={showUpload}>Upload data</button>
+          <button type="button" className="on-dark" onClick={() => go('/dashboard')} disabled={!active || !showUpload}>Dashboard</button>
         </nav>
       </header>
       <main>

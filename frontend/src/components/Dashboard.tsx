@@ -1,50 +1,16 @@
 import { useRef, useState, type KeyboardEvent } from 'react'
-import { useApi } from '../hooks/useApi'
+import type { Grain } from '../types'
 import AnomalyTable from './AnomalyTable'
 import BenchmarkPanel from './BenchmarkPanel'
 import Chat from './Chat'
 import KpiPanel from './KpiPanel'
-import TrendChart, { type QuarterPoint } from './TrendChart'
-
-interface VarianceView { quarterly_time_series: QuarterPoint[]; stl_available: boolean; entity_not_found?: boolean }
-interface Entities { entities: { departments: string[]; categories: string[] } }
-
-function Trend({ datasetId }: { datasetId: string }) {
-  const [sel, setSel] = useState('') // "department:Name" | "category:Name" | ''
-  const ents = useApi<Entities>('/entities', { dataset_id: datasetId })
-  const [level, name] = sel ? (sel.split(/:(.*)/s) as [string, string]) : ['total', undefined]
-  const v = useApi<VarianceView>('/variance', { dataset_id: datasetId, entity_level: level, entity_name: name })
-  return (
-    <section aria-label="Trend" className="card">
-      <div className="panel-head">
-        <h2>Quarterly trend</h2>
-        <label>Entity{' '}
-          <select value={sel} onChange={(e) => setSel(e.target.value)}>
-            <option value="">All spending</option>
-            {ents.data && (
-              <>
-                <optgroup label="Departments">
-                  {ents.data.entities.departments.map((d) => <option key={d} value={`department:${d}`}>{d}</option>)}
-                </optgroup>
-                <optgroup label="Categories">
-                  {ents.data.entities.categories.map((c) => <option key={c} value={`category:${c}`}>{c}</option>)}
-                </optgroup>
-              </>
-            )}
-          </select>
-        </label>
-      </div>
-      {v.error && <div className="error-note" role="alert">{v.error}</div>}
-      {v.data && !v.data.entity_not_found && (
-        <TrendChart entityName={name ?? 'All spending'} series={v.data.quarterly_time_series} stlAvailable={v.data.stl_available} />
-      )}
-    </section>
-  )
-}
+import Forecast from './Forecast'
+import Trends from './Trends'
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'trends', label: 'Trends' },
+  { id: 'forecast', label: 'Forecast' },
   { id: 'anomalies', label: 'Anomalies' },
   { id: 'benchmark', label: 'Benchmark' },
 ] as const
@@ -53,6 +19,7 @@ type TabId = (typeof TABS)[number]['id']
 export default function Dashboard({ datasetId, sessionId, replayMode }: { datasetId: string; sessionId: string; replayMode: boolean }) {
   const [tab, setTab] = useState<TabId>('overview')
   const [chatOpen, setChatOpen] = useState(true)
+  const [grain, setGrain] = useState<Grain>('month')
   const btns = useRef<Record<string, HTMLButtonElement | null>>({})
 
   const onKey = (e: KeyboardEvent, i: number) => {
@@ -84,8 +51,9 @@ export default function Dashboard({ datasetId, sessionId, replayMode }: { datase
           </button>
         </div>
         <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} tabIndex={0} className="tabpanel">
-          {tab === 'overview' && <KpiPanel datasetId={datasetId} />}
-          {tab === 'trends' && <Trend datasetId={datasetId} />}
+          {tab === 'overview' && <KpiPanel datasetId={datasetId} onOpenForecast={() => setTab('forecast')} />}
+          {tab === 'trends' && <Trends datasetId={datasetId} grain={grain} onGrain={setGrain} />}
+          {tab === 'forecast' && <Forecast datasetId={datasetId} grain={grain} onGrain={setGrain} />}
           {tab === 'anomalies' && <AnomalyTable datasetId={datasetId} />}
           {tab === 'benchmark' && <BenchmarkPanel datasetId={datasetId} />}
         </div>
