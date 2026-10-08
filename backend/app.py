@@ -26,6 +26,10 @@ GET  /api/scenarios/presets      list available preset scenarios
 POST /api/scenarios/run          run a custom what-if scenario
 GET  /api/scenarios/preset/<id>  run a named preset scenario
 
+Endpoints  (Phase 4 – Bedrock Chatbot)
+---------------------------------------
+POST /api/chat                   natural-language financial Q&A
+
 All GET endpoints accept these optional query parameters:
   fiscal_year, department, category, fund_source,
   report_status, month_start, month_end, include_synthetic (true/false)
@@ -61,6 +65,7 @@ from analytics import (
 )
 from forecasting import run_forecasting, load_results, load_metrics
 from scenarios  import run_scenario, run_preset, get_preset_list
+from chatbot    import answer_question
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": os.environ.get("CORS_ORIGIN", "*")}})
@@ -315,6 +320,66 @@ def scenario_preset(preset_id: str):
         return _error(str(exc), 404)
     except FileNotFoundError as exc:
         return _error(str(exc), 404)
+    except Exception as exc:
+        return _error(str(exc), 500)
+
+
+# ── Phase 4: chatbot route ────────────────────────────────────────────────────
+
+@app.route("/api/chat", methods=["POST"])
+def chat():
+    """
+    POST /api/chat
+    Body (JSON):
+    {
+      "question": "Which department exceeded its budget the most?",
+      "filters": { "fiscal_year": "FY2026", "department": null, ... },
+      "history": [
+        {"role": "user",      "text": "..."},
+        {"role": "assistant", "text": "..."}
+      ]
+    }
+
+    Returns:
+    {
+      "answer": str,
+      "context_summary": [str, ...],
+      "model": str,
+      "bedrock_available": bool,
+      "error": str | null
+    }
+    """
+    try:
+        body     = request.get_json(force=True) or {}
+        question = (body.get("question") or "").strip()
+        if not question:
+            return _error("question is required")
+
+        filters = body.get("filters") or {}
+        # Coerce filter values — drop null/empty so apply_filters ignores them
+        clean_filters = {
+            "fiscal_year":       filters.get("fiscal_year") or None,
+            "department":        filters.get("department")  or None,
+            "category":          filters.get("category")    or None,
+            "fund_source":       filters.get("fund_source") or None,
+            "report_status":     filters.get("report_status") or None,
+            "month_start":       filters.get("month_start") or None,
+            "month_end":         filters.get("month_end")   or None,
+            "include_synthetic": filters.get("include_synthetic", True),
+        }
+
+        history = body.get("history") or []
+        # Validate history shape; silently drop malformed entries
+        history = [
+            h for h in history
+            if isinstance(h, dict)
+            and h.get("role") in ("user", "assistant")
+            and isinstance(h.get("text"), str)
+        ]
+
+        result = answer_question(question, clean_filters, history)
+        return jsonify(result)
+
     except Exception as exc:
         return _error(str(exc), 500)
 

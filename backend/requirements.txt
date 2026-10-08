@@ -14,3 +14,6 @@ boto3==1.34.144    # only needed when DATA_SOURCE=s3
 # Phase 2 – ML forecasting
 scikit-learn==1.5.1
 joblib==1.4.2
+
+# Phase 4 – Bedrock chatbot (boto3 already listed above, just needs the right version)
+# boto3>=1.34.144 supports bedrock-runtime Converse API
