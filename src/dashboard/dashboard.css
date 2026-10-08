@@ -3,6 +3,28 @@
    Never hardcode colors — always reference CSS variables.
    ──────────────────────────────────────────────────────────────────────────── */
 
+/* ── overview grid layout ────────────────────────────────────────────────── */
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.chart-card {
+  min-width: 0;
+}
+
+.attention-card {
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── filter bar ─────────────────────────────────────────────────────────── */
 .dash-filters {
   display: flex;
@@ -84,9 +106,12 @@
 .var-pill-amber { background: #fef9c3; color: #92400e; }
 
 /* ── stat tones ────────────────────────────────────────────────────────────── */
-.stat.stat-warn   { border-color: #fde68a; }
-.stat.stat-good   { border-color: #bbf7d0; }
-.stat.stat-alert  { border-color: #fca5a5; }
+.workspace-v2 .stat.stat-warn   { background: #fffbeb; }
+.workspace-v2 .stat.stat-warn > strong { color: #92400e; }
+.workspace-v2 .stat.stat-good   { background: #f0fdf4; }
+.workspace-v2 .stat.stat-good > strong { color: #15803d; }
+.workspace-v2 .stat.stat-alert  { background: #fff1f2; }
+.workspace-v2 .stat.stat-alert > strong { color: #be123c; }
 
 /* ── dept bar chart ─────────────────────────────────────────────────────── */
 .dept-bars {

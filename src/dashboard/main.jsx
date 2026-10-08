@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { DATA } from "../data.js";
 import "../styles.css";
+import "../workspace.css";
 import "./dashboard.css";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -792,7 +793,7 @@ function Workspace() {
 
   return (
     <div className="workspace-v2">
-      <aside className="tool-dock" aria-label="Analytics dock">
+    <aside className="tool-dock" aria-label="Analytics dock">
         <a className="dock-home" href="/dashboard.html" aria-label="UIC Analytics home">
           <span className="dock-monogram">a<span>.</span></span>
         </a>
