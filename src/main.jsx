@@ -362,8 +362,8 @@ function Chart({ monthly }) {
         >
           <defs>
             <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity=".22" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+              <stop offset="0%" stopColor="#d5a03c" stopOpacity=".22" />
+              <stop offset="100%" stopColor="#d5a03c" stopOpacity="0" />
             </linearGradient>
           </defs>
           {[20, 95, 178].map((y) => (
@@ -373,7 +373,7 @@ function Chart({ monthly }) {
               y1={y}
               x2={w}
               y2={y}
-              stroke="#e7ece8"
+              stroke="#eae6df"
               strokeDasharray="5 5"
             />
           ))}
@@ -384,7 +384,7 @@ function Chart({ monthly }) {
           <polyline
             points={points}
             fill="none"
-            stroke="#059669"
+            stroke="#c58b24"
             strokeWidth="3"
             strokeLinejoin="round"
           />
@@ -394,7 +394,7 @@ function Chart({ monthly }) {
               cx={24 + (i * (w - 48)) / 11}
               cy={h - 12 - (v / max) * (h - 32)}
               r="4"
-              fill="#059669"
+              fill="#c58b24"
               stroke="white"
               strokeWidth="2"
             >
