@@ -1,6 +1,6 @@
 # Budget Forecasting Analyst — Technical Design
 
-**Status:** Draft (Revision 2)
+**Status:** Draft (Revision 4)
 **Date:** 2026-10-08
 **Requirements source:** docs/requirements.md (APPROVED)
 **Profiling source:** docs/design.md
@@ -90,6 +90,21 @@ The backend inspects the first four bytes of the upload for the XLSX magic numbe
 ### 2.3 Column Mapping
 
 The raw column names are returned to the frontend in a `ColumnMappingProposal` response. The backend uses a case-insensitive fuzzy match (difflib `SequenceMatcher` ratio ≥ 0.8) to auto-suggest a canonical field for each source column. The frontend renders the mapping table; the user may override suggestions. On confirmation, the frontend `POST`s the confirmed `ColumnMappingRequest`. The backend validates that the five required fields are present in the mapping (period indicator, department, category, budget, actual); if any are absent it returns HTTP 422 with a structured error listing the missing fields.
+
+**Pydantic models:**
+
+```python
+class ColumnMappingProposal(BaseModel):
+    dataset_name: str
+    source_columns: list[str]
+    suggestions: dict[str, str | None]    # source_col → canonical_field or None
+    required_fields: list[str]            # canonical fields that must be mapped
+    unmapped_required: list[str]          # canonical fields with no auto-suggestion
+
+class ColumnMappingRequest(BaseModel):
+    dataset_name: str
+    mapping: dict[str, str]               # source_col → canonical_field (confirmed by user)
+```
 
 ### 2.4 Canonical Schema
 
@@ -185,12 +200,12 @@ def test_unmapped_period_row_accepted(tmp_duckdb):
     """
     A row with fiscal_year='FY2023' (outside PERIOD_MAP) must be accepted
     by the ingestion pipeline. period_index must be NULL. The validation
-    report must count it in 'unmapped_periods', not in 'rejected_rows'.
+    report must count it in 'unmapped_periods', not in 'rows_rejected'.
     """
     row = make_test_row(fiscal_year="FY2023", fiscal_quarter="Q1")
     report = run_ingestion_pipeline([row], db=tmp_duckdb)
-    assert report.rejected_rows == 0
-    assert report.unmapped_periods == 1
+    assert report.rows_rejected == 0
+    assert report.rows_unmapped_period == 1
     conn = duckdb.connect(tmp_duckdb)
     result = conn.execute(
         "SELECT period_index FROM budget_records WHERE fiscal_year='FY2023'"
@@ -201,6 +216,30 @@ def test_unmapped_period_row_accepted(tmp_duckdb):
 ### 2.6 Validation Report
 
 The ingestion pipeline returns a `ValidationReport` Pydantic model. All six explicit DQ findings (R1-06) are surfaced:
+
+**R1-05 derived column reconciliation (run against budget_records after load):**
+
+```sql
+-- R1-05 derived column reconciliation (run against budget_records after load)
+SELECT COUNT(*) AS variance_usd_mismatches
+FROM budget_records
+WHERE source_variance IS NOT NULL
+  AND ABS((actual - budget) - source_variance) > 0.01;
+
+SELECT COUNT(*) AS yoy_mismatches
+FROM budget_records
+WHERE prior_year_actual IS NOT NULL AND prior_year_actual != 0
+  AND yoy_change_pct IS NOT NULL
+  AND ABS((actual / prior_year_actual - 1) * 100 - yoy_change_pct) > 0.05;
+
+SELECT COUNT(*) AS forecast_accuracy_mismatches
+FROM budget_records
+WHERE source_forecast IS NOT NULL AND actual != 0
+  AND forecast_accuracy_pct IS NOT NULL
+  AND ABS((100 - ABS(source_forecast - actual) / actual * 100) - forecast_accuracy_pct) > 0.05;
+```
+
+These three counts populate the `variance_usd_mismatches`, `yoy_mismatches`, and `forecast_accuracy_mismatches` fields in `ValidationReport` (see below).
 
 **DQ finding (a) — BUD-00018 inconsistency:**
 Query: `SELECT record_id FROM budget_records WHERE source_variance = 0.0 AND variance_pct != 0.0`. Any matching rows are listed in the report with the label "variance_usd=0 but variance_pct≠0". For the sample dataset, BUD-00018 (`variance_pct = −2.1`) will appear. These rows are carried as-is; no correction is applied.
@@ -224,6 +263,32 @@ Query: `SELECT COUNT(*) FROM budget_records WHERE variance_pct <= -50 OR varianc
 
 **DQ finding (f) — Check for rows at the +50 cap:**
 Query: `SELECT record_id FROM budget_records WHERE variance_pct >= 50`. In the sample dataset this returns 0 rows; the report must explicitly state: "Rows at +50 cap: 0". This check must always run (the count could be non-zero in other datasets).
+
+**`ValidationReport` and `DQFinding` Pydantic models:**
+
+```python
+class DQFinding(BaseModel):
+    code: str           # e.g. "variance_zero_nonzero_pct", "duplicate_keys"
+    record_ids: list[str]
+    message: str
+
+class ValidationReport(BaseModel):
+    total_rows: int
+    rows_accepted: int
+    rows_rejected: int
+    rows_unmapped_period: int
+    fiscal_period_range: str           # e.g. "FY2024 Q1 – FY2026 Q4"
+    department_count: int
+    category_count: int
+    fund_source_count: int
+    variance_usd_mismatches: int       # recomputed vs stored
+    yoy_mismatches: int
+    forecast_accuracy_mismatches: int
+    duplicate_key_combos: int
+    duplicate_key_rows: int
+    source_flag_sign_disagreements: int
+    dq_findings: list[DQFinding]
+```
 
 ### 2.7 Sample Data Button (R1-11)
 
@@ -335,6 +400,30 @@ ORDER BY period_index;
 ### 3.2 Anomaly Detection Algorithm
 
 The anomaly detector is a pure Python function operating on a pandas DataFrame extracted from DuckDB. It is not a model training step; it runs on demand and its outputs are stored in DuckDB table `anomaly_results`.
+
+**DuckDB table DDL:**
+
+```sql
+CREATE TABLE IF NOT EXISTS anomaly_results (
+    run_id        VARCHAR NOT NULL,   -- UUID for this detection run
+    dataset_id    VARCHAR NOT NULL,
+    record_id     VARCHAR NOT NULL,
+    detector_flag INTEGER NOT NULL,   -- 1 = flagged
+    z_score       DOUBLE,
+    peer_group    VARCHAR,
+    sensitivity   DOUBLE NOT NULL,
+    computed_at   TIMESTAMP NOT NULL
+);
+CREATE TABLE IF NOT EXISTS anomaly_run_summary (
+    run_id      VARCHAR PRIMARY KEY,
+    dataset_id  VARCHAR NOT NULL,
+    sensitivity DOUBLE NOT NULL,
+    tp INTEGER, fp INTEGER, fn INTEGER, tn INTEGER,
+    computed_at TIMESTAMP NOT NULL
+);
+```
+
+Both `anomaly_results` and `anomaly_run_summary` are stored within the dataset's own `.ddb` file at `/data/dbs/{dataset_id}.ddb`. The `dataset_id` column in `anomaly_results` is retained for cross-validation queries and is always equal to the containing file's dataset UUID.
 
 **Algorithm (locked):**
 
@@ -511,6 +600,8 @@ STL (Seasonal and Trend decomposition using Loess) requires at minimum 8 quarter
 
 When STL is not available, the frontend must show a visible note in the trend chart area: "STL decomposition unavailable: [Entity] has only [N] quarters of data (minimum 8 required)." This note must be present even if the chart area is otherwise empty. The note must not be dismissible.
 
+For STL-ineligible entities, `TrendChart.tsx` renders the raw quarterly spend-vs-budget ratio data points connected by a line, overlaid with an OLS regression line computed client-side from the `quarterly_time_series` array in the `explain_variance` response. No additional API call is required for the fallback trend line.
+
 The STL call uses `statsmodels.tsa.seasonal.STL`. Period parameter is 4 (quarterly seasonality). Results include trend and seasonal components, rendered as overlaid lines on the Recharts time-series chart.
 
 ### 3.7 KPI Panel Specification (R2-07)
@@ -530,6 +621,13 @@ class KpiEntityRow(BaseModel):
     variance_usd: float
     variance_pct_agg: float  # (SUM(actual)/SUM(budget) - 1) * 100
 
+class FiscalYearSummary(BaseModel):
+    fiscal_year: str
+    total_actual: float
+    total_budget: float
+    variance_usd: float
+    variance_pct: float
+
 class KpiResponse(BaseModel):
     fiscal_year_filter: str | None   # e.g. "FY2026", or None for all years
     top_over_departments: list[KpiEntityRow]   # top-N by variance_pct_agg DESC
@@ -539,9 +637,12 @@ class KpiResponse(BaseModel):
     total_actual: float
     total_budget: float
     total_variance_pct: float
-    anomaly_count: int        # count from most recent detect_anomalies run (stored in anomaly_results)
-    source_flag_disagreement_count: int  # FN count from confusion matrix
+    anomaly_count: int        # count of `detector_flag=1` rows in `anomaly_results` for the most recent `run_id` by `computed_at` for this `dataset_id`
+    source_flag_disagreement_count: int  # count of rows where detector and source disagree (FP + FN from confusion matrix)
+    fiscal_year_summary: list[FiscalYearSummary]  # always includes all available years
 ```
+
+Note: The `GET /kpis` DuckDB query adds a `GROUP BY fiscal_year` sub-query that always returns all available fiscal years regardless of the `fiscal_year_filter`. The `source_flag_disagreement_count` field is computed as `fp + fn` from the `anomaly_run_summary` table for the most recent `run_id` (by `computed_at`) for this `dataset_id`.
 
 **DuckDB queries (same formula as §3.1, enforced by sharing the `build_variance_query()` helper):**
 
@@ -690,15 +791,14 @@ The full decision table (all conditions evaluated in order; first match wins):
 
 | Condition | Label |
 |---|---|
-| Entity has < 8 quarters of history | Low |
-| College of Liberal Arts & Sciences (6 quarters) | Low (always) |
-| Travel & Conferences (7 quarters) | Low (always) |
-| < 9 quarters (no CV folds possible) | Low |
+| Entity has < 9 quarters of history (< 8: cannot model; 8 exactly: no CV folds) | Low |
 | 9 quarters exactly (only 1 CV fold; insufficient for uplift) | Low |
 | High CV error: MAE ≥ 0.15 OR sMAPE ≥ 30% | Low |
 | Wide 95% PI: width > 0.3 AND otherwise would be High | Medium (override) |
 | Medium CV error: 0.05 ≤ MAE < 0.15 OR 10% ≤ sMAPE < 30% | Medium |
 | Low CV error: MAE < 0.05 AND sMAPE < 10% | High |
+
+> This includes College of Liberal Arts & Sciences (6 quarters) and Travel & Conferences (7 quarters) in the sample dataset. No hard-coded entity names in code; the general rule applies.
 
 Thresholds are configurable via environment variables. Defaults match the `.env.example`:
 
@@ -964,6 +1064,8 @@ class RunForecastResponse(BaseModel):
     points: list[ForecastPoint]
     stl_available: bool
     stl_note: str | None             # e.g. "STL unavailable: 7 quarters of data (minimum 8 required)"
+    dollar_forecast_available: bool        # False when no FY2026 budget denominator
+    dollar_unavailable_reason: str | None  # human-readable; populated when dollar_forecast_available=False
     refusal: str | None              # non-null only for dept_x_category (error path)
 ```
 
@@ -971,7 +1073,7 @@ class RunForecastResponse(BaseModel):
 
 **Error handling — entity not found:** Returns `entity_not_found: true` in a standard error envelope; the agent loop signals insufficient-data.
 
-**Dollar field grounding note:** The LLM is permitted to cite `dollar_forecast` and the dollar interval fields from the tool response verbatim. These are the only dollar figures the LLM may state when answering a forecast question. The grounding check verifies cited dollar amounts against these fields using the bare-dollar tolerance rule (exact ± $1). If `dollar_forecast` is null (e.g., no budget data for FY2026), the LLM must report the ratio forecast only and note that a dollar conversion is unavailable.
+**Dollar field grounding note:** The LLM is permitted to cite `dollar_forecast` and the dollar interval fields from the tool response verbatim. These are the only dollar figures the LLM may state when answering a forecast question. The grounding check verifies cited dollar amounts against these fields using the tolerance rule appropriate to the cited format: bare-dollar citations (e.g. $108,693) use ± $1; abbreviated citations ($M, $K) use the rounding rules in §7.1 Step 3 Table. If `dollar_forecast_available` is `false`, the LLM must report the ratio forecast only and note the reason from `dollar_unavailable_reason`.
 
 ### Tool 4: `detect_anomalies`
 
@@ -1879,7 +1981,7 @@ aws-hackathon/
 
 **Dataset deleted while a chat session is active:** On the next tool call, DuckDB returns "file not found". The tool handler catches this, returns HTTP 404, and the frontend shows: "The active dataset is no longer available. Please select another dataset."
 
-**Dollar forecast unavailable (entity has no FY2026 budget rows):** `run_forecast` returns all dollar fields as `null` and sets `stl_note` to include: "Dollar forecast unavailable: no FY2026 budget data found for this entity. Ratio forecast is available." The LLM is instructed to report only ratio figures in this case.
+**Dollar forecast unavailable (entity has no FY2026 budget rows):** `run_forecast` sets `dollar_forecast_available=False` and `dollar_unavailable_reason="No FY2026 budget data found for this entity."` All dollar fields in `ForecastPoint` are returned as `null`. The system prompt and grounding check key off `dollar_forecast_available: false` as the machine-readable suppression signal; the LLM reports only ratio figures and surfaces `dollar_unavailable_reason` to the user.
 
 ---
 
@@ -1911,3 +2013,27 @@ This section documents the design revision team's response to each finding from 
 | FINDING-R04: KPI panel has no endpoint, query, or consistency guarantee | MEDIUM | RESOLVED. §3.7 added with full spec: endpoint `GET /kpis`, `KpiResponse` Pydantic model, DuckDB query using shared `build_variance_query()` helper, explicit "no separate cache" invariant, consistency test, `KPI_TOP_N` env var. |
 | FINDING-R05: Replay trace tool-call contents unspecified | MEDIUM | RESOLVED. §9.2 expanded with tool-sequence table specifying expected tools, order, and grounding anchors for all seven prompts. |
 | NIT-01: §5.8 vs §10.2 caveat text inconsistency | NIT | RESOLVED. §5.8 removed; caveat logic is now specified exclusively in §10.2 with fully dynamic text. No static "4.1%" or "14.5%" in code. |
+
+### Design Review Findings (Rev 3)
+
+| Finding | Severity | Resolution |
+|---|---|---|
+| FINDING-MR01: `ValidationReport` Pydantic model absent | HIGH | RESOLVED. `DQFinding` and `ValidationReport` classes added to §2.6 with all required fields (entity counts, fiscal period range, derived-column reconciliation counts, source-flag sign disagreements). |
+| FINDING-MR02: `stl_note` dual-use for dollar unavailability | HIGH | RESOLVED. `dollar_forecast_available: bool` and `dollar_unavailable_reason: str | None` added to `RunForecastResponse` in §6 Tool 3. Appendix B updated to set these fields instead of overloading `stl_note`. System prompt and grounding check key off `dollar_forecast_available: false`. |
+| FINDING-MR03: `anomaly_results` DDL missing | MEDIUM | RESOLVED. `CREATE TABLE IF NOT EXISTS anomaly_results` and `anomaly_run_summary` DDL added to §3.2. `KpiResponse.anomaly_count` comment updated to reference `detector_flag=1` rows by most recent `run_id`. |
+| FINDING-MR04: Fiscal-year breakdown missing from `KpiResponse` | MEDIUM | RESOLVED. `FiscalYearSummary` model and `fiscal_year_summary: list[FiscalYearSummary]` field added to §3.7. Note added that the `GET /kpis` query always returns all fiscal years via a `GROUP BY fiscal_year` sub-query. |
+| FINDING-MR05: Plain trend line fallback computation unspecified | MEDIUM | RESOLVED. Sentence added to §3.6 specifying that `TrendChart.tsx` renders raw data points connected by a line overlaid with a client-side OLS regression line from `quarterly_time_series`; no additional API call required. |
+| FINDING-MR06: Derived-column reconciliation absent from §2.6 | MEDIUM | RESOLVED. Three SQL reconciliation queries (variance_usd, yoy_change_pct, forecast_accuracy_pct) added to §2.6 before the DQ findings list, labeled "R1-05 derived column reconciliation". |
+| FINDING-MR07: `ColumnMappingProposal`/`ColumnMappingRequest` schemas undefined | MEDIUM | RESOLVED. Both Pydantic class definitions added to §2.3 with all fields specified. |
+| FINDING-MR08: Abbreviated-dollar tolerance contradicts §7.1 in §6 Tool 3 | NIT | RESOLVED. Dollar field grounding note in §6 Tool 3 updated to distinguish bare-dollar (±$1) from abbreviated-dollar ($M/$K rounding rules per §7.1 Step 3 Table). |
+| FINDING-MR09: Named entity rows in confidence label table | NIT | RESOLVED. Named rows for College of Liberal Arts & Sciences and Travel & Conferences removed from §5.5 table. Note added after the "< 8 quarters → Low" row explaining these are covered by the general rule; no hard-coded entity names in code. |
+
+### Design Review Findings (Rev 4)
+
+| Finding | Severity | Resolution |
+|---|---|---|
+| NEW-01: `anomaly_results` and `anomaly_run_summary` storage location unspecified | MEDIUM | RESOLVED. One sentence added to §3.2 immediately after the DDL block: both tables are stored within the dataset's own `.ddb` file at `/data/dbs/{dataset_id}.ddb`; the `dataset_id` column is retained for cross-validation queries and is always equal to the containing file's dataset UUID. |
+| NEW-02: `source_flag_disagreement_count` comment described only FN, not FP+FN | MEDIUM | RESOLVED. Comment updated in §3.7 `KpiResponse` to read "count of rows where detector and source disagree (FP + FN from confusion matrix)". Note added to §3.7 stating that the `GET /kpis` endpoint computes `source_flag_disagreement_count` as `fp + fn` from `anomaly_run_summary` for the most recent `run_id` by `computed_at` for this `dataset_id`. |
+| NEW-03: `QueryActualsResponse` referenced as providing `quarterly_time_series` in §3.6 but model lacks that field | MEDIUM | RESOLVED (Option B). The §3.6 sentence now reads "…from the `quarterly_time_series` array in the `explain_variance` response. No additional API call is required for the fallback trend line." The phrase "or `query_actuals`" was removed; `ExplainVarianceResponse` already contains `quarterly_time_series`. `QueryActualsResponse` was not modified. |
+| NEW-04: Confidence label table had two overlapping rows for < 8 quarters and < 9 quarters | NIT | RESOLVED. Rows merged into a single row: "Entity has < 9 quarters of history (< 8: cannot model; 8 exactly: no CV folds) → Low". The note about CLAS and Travel & Conferences is retained on the merged row. |
+| Field name mismatch: `rows_unmapped_period` vs `unmapped_periods` in §2.5 test | NIT | RESOLVED. Test assertion in §2.5 changed from `report.unmapped_periods` to `report.rows_unmapped_period` to match the `ValidationReport` Pydantic model field defined in §2.6. |

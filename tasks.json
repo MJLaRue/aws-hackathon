@@ -1,0 +1,429 @@
+{
+  "complete": false,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Repo scaffold: directory structure, .env.example, docker-compose.yml",
+      "description": "Create the top-level directory layout exactly as specified in Appendix A of technical-design.md. Create backend/, frontend/, infra/, tests/fixtures/, data/ directories. Write docker-compose.yml matching §11.1 (backend:8000, frontend:3000, duckdb_data volume, bind-mount ./data:/app/data:ro). Write .env.example with all variables from §11.1 (BEDROCK_MODEL_ID, AWS creds, REPLAY_MODE=false, BEDROCK_TIMEOUT_SECONDS=30, ANOMALY_SENSITIVITY=2.5, FORECAST_HORIZON=4, all FORECAST_* thresholds, KPI_TOP_N=5). Add .env to .gitignore. Verify: `docker-compose config` exits 0 and lists both services.",
+      "phase": "skeleton",
+      "depends_on": [],
+      "done": true
+    },
+    {
+      "id": "T02",
+      "title": "Backend: FastAPI app skeleton with /health endpoint",
+      "description": "Create backend/main.py with a FastAPI app. Register GET /health returning {\"status\": \"ok\"}. Create backend/requirements.txt with pinned versions: fastapi, uvicorn[standard], pydantic>=2, duckdb, pandas, openpyxl, boto3, statsforecast, statsmodels, python-multipart. Create backend/Dockerfile (python:3.12-slim, pip install, uvicorn entrypoint on port 8000). Verify: `docker-compose build backend && docker-compose run --rm backend python -c \"from main import app; print('ok')\"` exits 0.",
+      "phase": "skeleton",
+      "depends_on": ["T01"],
+      "done": false
+    },
+    {
+      "id": "T03",
+      "title": "Frontend: Vite + React + TypeScript scaffold",
+      "description": "Scaffold a Vite + React + TypeScript project in frontend/ using `npm create vite@latest . -- --template react-ts`. Add recharts and its types to package.json. Create frontend/Dockerfile (node:20-alpine build stage, nginx:alpine serve stage). Set VITE_API_BASE_URL from environment in vite.config.ts. Verify: `docker-compose build frontend` exits 0.",
+      "phase": "skeleton",
+      "depends_on": ["T01"],
+      "done": false
+    },
+    {
+      "id": "T04",
+      "title": "NIT fix: update §2.5 test to use report.rows_rejected (design-review NEW-05)",
+      "description": "In technical-design.md §2.5, the test assertion reads `report.rejected_rows == 0`. The ValidationReport Pydantic model in §2.6 defines the field as `rows_rejected: int`. Change the assertion in the design document (and in any test code written so far) to `assert report.rows_rejected == 0`. This prevents an AttributeError at runtime. Verify: grep the updated technical-design.md for 'report.rows_rejected' and confirm 'report.rejected_rows' is absent.",
+      "phase": "skeleton",
+      "depends_on": [],
+      "done": true
+    },
+    {
+      "id": "T05",
+      "title": "NIT fix: move §5.5 blockquote after confidence decision table (design-review NEW-06)",
+      "description": "In technical-design.md §5.5, move the blockquote note about College of Liberal Arts & Sciences and Travel & Conferences to appear AFTER the complete 6-row confidence decision table, not between rows 1 and 2. This ensures the table renders as a single contiguous Markdown table with a header row. The table must have rows: (1) < 9 quarters → Low, (2) 9 quarters exactly → Low, (3) High CV error → Low, (4) Wide 95% PI → Medium, (5) Medium CV error → Medium, (6) Low CV error → High. Verify: rendered Markdown shows one table with 6 data rows and the blockquote below it.",
+      "phase": "skeleton",
+      "depends_on": [],
+      "done": true
+    },
+    {
+      "id": "T06",
+      "title": "Backend: canonical schema + DuckDB table DDL (ingestion/schema.py)",
+      "description": "Create backend/ingestion/schema.py with: (1) COLUMN_MAP dict mapping all 25 source column names to canonical field names per §2.4 of technical-design.md. (2) PERIOD_MAP dict mapping (fiscal_year, fiscal_quarter) tuples to period_index integers 1–12. (3) The `derive_period_index(df)` function that applies PERIOD_MAP and sets NULL for unrecognised periods. (4) The DDL string CREATE_TABLE_SQL matching the §2.5 CREATE TABLE statement exactly (all 27 columns with correct types, period_index INTEGER nullable, record_id VARCHAR PRIMARY KEY). No test runner needed yet; verify by importing schema.py and running `python -c 'from ingestion.schema import CREATE_TABLE_SQL; print(len(CREATE_TABLE_SQL))'`.",
+      "phase": "backend",
+      "depends_on": ["T02"],
+      "done": false
+    },
+    {
+      "id": "T07",
+      "title": "Backend: ingestion pipeline — file detection, parsing, column mapping (ingestion/pipeline.py)",
+      "description": "Create backend/ingestion/pipeline.py with: (1) `detect_and_parse(file_bytes, filename)` — inspects first 4 bytes for XLSX magic (PK\\x03\\x04), uses pandas read_excel (openpyxl) or read_csv (UTF-8 then latin-1 fallback); rejects files > 50 MB with HTTP 413. (2) `suggest_column_mapping(source_columns)` — uses difflib SequenceMatcher ratio ≥ 0.8 case-insensitively against COLUMN_MAP keys to produce suggestions dict. (3) `validate_mapping(mapping)` — checks that period indicator, department, category, budget, actual are all mapped; returns list of missing fields. Returns ColumnMappingProposal Pydantic model (§2.3). Verify: `pytest tests/test_ingestion.py::test_column_mapping_suggestion` passes.",
+      "phase": "backend",
+      "depends_on": ["T06"],
+      "done": false
+    },
+    {
+      "id": "T08",
+      "title": "Backend: ingestion pipeline — DuckDB load, validation report, DQ findings",
+      "description": "Extend backend/ingestion/pipeline.py with `load_to_duckdb(df, dataset_id, db_path)` that: creates the budget_records table using CREATE_TABLE_SQL, inserts all rows, derives period_index, runs the 6 DQ checks from §2.6 (variance_usd mismatches, yoy mismatches, forecast accuracy mismatches, BUD-00018 pattern, source forecast gap, duplicate natural keys, anomaly sign inconsistency, cap rows). Returns a populated ValidationReport Pydantic model (§2.6) with all fields including dq_findings: list[DQFinding]. Note: use `rows_rejected` field name (not `rejected_rows`) per NIT fix T04. Verify: `pytest tests/test_ingestion.py::test_validation_report_sample_data` passes with correct row counts.",
+      "phase": "backend",
+      "depends_on": ["T07"],
+      "done": false
+    },
+    {
+      "id": "T09",
+      "title": "Backend: dataset catalog (catalog.ddb) and /datasets, POST /upload endpoints",
+      "description": "Create the shared catalog.ddb with datasets table (§2.8 DDL). Implement in backend/main.py: POST /upload (multipart, file + dataset_name) — calls pipeline, writes per-dataset .ddb to DUCKDB_DATA_DIR/{uuid}.ddb, inserts into catalog, returns ColumnMappingProposal. POST /upload/confirm (ColumnMappingRequest body) — finalises mapping, runs load_to_duckdb, returns ValidationReport. GET /datasets — reads catalog.ddb, returns list. POST /upload/sample — loads bundled data/Team6Dataset.xlsx with auto-confirmed canonical mapping, returns ValidationReport. Verify: `pytest tests/test_ingestion.py::test_sample_upload_returns_300_rows` passes.",
+      "phase": "backend",
+      "depends_on": ["T08"],
+      "done": false
+    },
+    {
+      "id": "T10",
+      "title": "Tests: test fixture file (tests/fixtures/test_dataset.xlsx)",
+      "description": "Create tests/fixtures/test_dataset.xlsx (~60 rows) satisfying §11.3: covers all 16 departments (≥1 row each), all 10 categories (≥1 row each), all 6 fund sources (≥1 row each), includes record BUD-00018 exactly, includes ≥1 duplicate natural-key pair (same dept+category+year+quarter, different fund_source), ≥2 rows at variance_pct=−50, rows spanning ≥3 fiscal years and ≥4 quarters. Also create tests/fixtures/test_dataset.csv as an equivalent CSV. Verify: `python -c \"import pandas as pd; df=pd.read_excel('tests/fixtures/test_dataset.xlsx'); print(df.shape)\"` outputs (60+, 25).",
+      "phase": "backend",
+      "depends_on": ["T06"],
+      "done": false
+    },
+    {
+      "id": "T11",
+      "title": "Tests: ingestion unit tests (tests/test_ingestion.py)",
+      "description": "Write tests/test_ingestion.py covering: test_unmapped_period_row_accepted (FY2023 row accepted, period_index NULL, rows_rejected==0, rows_unmapped_period==1 — matches §2.5 exactly), test_bud_00018_dq_finding (BUD-00018 appears in dq_findings with code 'variance_zero_nonzero_pct'), test_duplicate_key_warning (duplicate natural key pair triggers dq_findings entry), test_file_too_large_rejected (>50MB raises HTTP 413), test_csv_detection, test_xlsx_detection. Use test_dataset.xlsx fixture for most tests, Team6Dataset.xlsx only for test_sample_upload_returns_300_rows. Verify: `pytest tests/test_ingestion.py -v` all pass.",
+      "phase": "backend",
+      "depends_on": ["T08", "T10"],
+      "done": false
+    },
+    {
+      "id": "T12",
+      "title": "Backend: variance analysis DuckDB queries and build_variance_query() helper (analysis/variance.py)",
+      "description": "Create backend/analysis/variance.py with: (1) `build_variance_query(entity_level, entity_name=None, fiscal_year=None, fiscal_quarter=None, period_index_from=None, period_index_to=None)` — parameterised DuckDB query builder supporting all five entity levels (total, department, category, fund_source, dept_x_category) using the exact SQL patterns from §3.1. Uses NULLIF(SUM(budget),0) for division safety. (2) `explain_variance(conn, dataset_id, entity_level, ...)` — runs the decomposition query and returns ExplainVarianceResponse (§6 Tool 6 Pydantic model) including quarterly_time_series, top_department_contributors, top_category_contributors, top_record_contributors, fund_source_split, persistent_pattern_share, one_time_outlier_share, dq_warnings. Calls attach_dq_warnings(record_ids). Verify: `pytest tests/test_tools.py::test_explain_variance_cc` passes and returns +14.85% for Consulting & Contracts.",
+      "phase": "backend",
+      "depends_on": ["T09"],
+      "done": false
+    },
+    {
+      "id": "T13",
+      "title": "Backend: anomaly detection algorithm (analysis/anomaly.py)",
+      "description": "Create backend/analysis/anomaly.py with: (1) `detect_anomalies(df, sensitivity=2.5)` — the median/MAD modified Z-score algorithm exactly as specified in §3.2 (z = 0.6745*(value-median)/MAD, fallback to department peer group when category MAD=0, skips when sub_mad=0). Adds severity field: 'high' (|z|>4), 'medium' (|z|>3), 'low' (|z|>2.5). Returns pandas DataFrame with all fields from AnomalyRecord Pydantic model. (2) `detect_persistent_patterns(df, threshold=5.0)` — the same-sign rule from §3.5: ≥±threshold in ≥2 of 3 fiscal years, per entity_col in (category, department). Returns list[dict] as specified. (3) `compute_confusion_matrix(flagged_ids, full_df)` — TP/FP/FN/TN counts. Verify: `pytest tests/test_anomaly.py::test_anomaly_ground_truth` passes (all 17 GT IDs flagged, ≤5 extras).",
+      "phase": "backend",
+      "depends_on": ["T09"],
+      "done": false
+    },
+    {
+      "id": "T14",
+      "title": "Tests: anomaly ground-truth tests (tests/test_anomaly.py)",
+      "description": "Write tests/test_anomaly.py with: test_anomaly_ground_truth (loads full 300-row dataset, calls detect_anomalies(sensitivity=2.5), asserts all 17 GT record_ids are in flagged set, asserts len(extra)<=5 — exact test from §3.2), test_detector_source_agreement (TP+FP+FN+TN==300 per §3.4), test_persistent_pattern_sign_consistency (per §3.5), test_clas_fy2025_excluded_from_over_qualifying_years (per §3.5), test_persistent_patterns_consulting_contracts (all 3 years qualifying, +16.1%, +13.9%, +14.7%), test_persistent_patterns_travel_conferences (all 3 years under, −17.9%, −14.1%, −9.8%), test_persistent_patterns_admin_overhead_boundary (FY2026=−5.0% qualifies), test_facility_maintenance_reversal (FY2026=−13.1% excluded from over-qualifying). Verify: `pytest tests/test_anomaly.py -v` all pass.",
+      "phase": "backend",
+      "depends_on": ["T13"],
+      "done": false
+    },
+    {
+      "id": "T15",
+      "title": "Tests: reconciliation tests against full dataset (tests/test_reconciliation.py)",
+      "description": "Write tests/test_reconciliation.py matching §11.4 exactly: test_row_count (300), test_dimensions (16 depts, 10 cats, 6 fund sources), test_forecast_accuracy_pct_mean (95.91±0.05), test_fy_variance parametrize (FY2024=−1.0%, FY2025=−2.6%, FY2026=−3.1% each ±0.1 ppt), test_category_variance parametrize (all 10 categories with expected % ±0.2 ppt), test_department_variance parametrize (6 spot-check departments ±0.2 ppt). Mark all with @pytest.mark.slow so they can be excluded from fast runs. Also add test_natural_key_non_unique (23 duplicate 4-col combos), test_6col_key_unique (300 distinct 6-col combos). Verify: `pytest tests/test_reconciliation.py -v -m slow` all pass.",
+      "phase": "backend",
+      "depends_on": ["T09"],
+      "done": false
+    },
+    {
+      "id": "T16",
+      "title": "Backend: KPI aggregation endpoint GET /kpis (analysis/kpis.py)",
+      "description": "Create backend/analysis/kpis.py with `get_kpis(conn, dataset_id, fiscal_year=None, top_n=5)` using the shared build_variance_query() helper from variance.py. Returns KpiResponse Pydantic model (§3.7) with: top_over_departments, top_under_departments, top_over_categories, top_under_categories, total_actual, total_budget, total_variance_pct, anomaly_count (from anomaly_results for most recent run_id), source_flag_disagreement_count (fp+fn from anomaly_run_summary), fiscal_year_summary (always all available fiscal years). Register GET /kpis?dataset_id=&fiscal_year= in main.py. Verify: `pytest tests/test_tools.py::test_kpi_panel_matches_query_actuals` passes: top_over_departments[0] == 'College of Architecture' with variance_pct_agg within 0.01 of query_actuals result.",
+      "phase": "backend",
+      "depends_on": ["T12", "T13"],
+      "done": false
+    },
+    {
+      "id": "T17",
+      "title": "Backend: reporting process health tool (analysis/health.py)",
+      "description": "Create backend/analysis/health.py with `get_reporting_health(conn, dataset_id, grouping, entity_name=None)` using the DuckDB query from §4.2 (AVG of all process columns, pct_with_errors, pct_delayed). grouping must be one of: total, department, report_type, report_status. Returns GetReportingHealthResponse with: rows: list[ProcessHealthRow], descriptive_note (hardcoded text from §4.3 verbatim), dq_note (populated if process columns absent). Enforce DESCRIPTIVE ONLY: the descriptive_note must contain the exact verbatim text from §4.3. Verify: `pytest tests/test_tools.py::test_descriptive_only_enforcement` passes (checks 'DESCRIPTIVE ONLY' in system prompt and 'descriptive_note' in tool response with 'causal' in it).",
+      "phase": "backend",
+      "depends_on": ["T09"],
+      "done": false
+    },
+    {
+      "id": "T18",
+      "title": "Backend: forecasting models (forecasting/models.py)",
+      "description": "Create backend/forecasting/models.py with five model classes: Naive, Drift, LinearTrend, ETSDampedTrend (statsmodels ExponentialSmoothing, damped_trend=True, trend='add', seasonal=None), SeasonalNaive (only available when series length ≥ 8). Each class has fit(series) and forecast(horizon) methods. forecast() returns a ForecastResult with point estimates and 80%/95% prediction intervals. For Naive/Drift, intervals use bootstrap resampling (1000 samples) over training residuals. No Prophet, no deep learning. Verify: `pytest tests/test_forecasting.py::test_all_models_produce_intervals` passes using a 12-point synthetic ratio series.",
+      "phase": "backend",
+      "depends_on": ["T02"],
+      "done": false
+    },
+    {
+      "id": "T19",
+      "title": "Backend: rolling-origin cross-validation and confidence labeling (forecasting/cv.py)",
+      "description": "Create backend/forecasting/cv.py with `rolling_origin_cv(series, models, min_train=8, max_folds=4)` — implements folds as specified in §5.4 (fold 1: train 1–8 predict 9, fold 2: train 1–9 predict 10, etc., max 4 folds). Returns cv_results per model with MAE and sMAPE across folds. Model with lowest MAE wins; sMAPE breaks ties. Also implement `compute_confidence_label(n_quarters, cv_mae, cv_smape, pi_95_width)` using the full decision table from §5.5 in order: <9 quarters → Low, 9 exactly → Low, MAE≥0.15 or sMAPE≥30% → Low, width>0.3 and otherwise High → Medium, 0.05≤MAE<0.15 or 10≤sMAPE<30 → Medium, else High. All thresholds read from env vars with defaults from §11.1. Verify: `pytest tests/test_forecasting.py::test_confidence_label_logic` passes all boundary cases.",
+      "phase": "backend",
+      "depends_on": ["T18"],
+      "done": false
+    },
+    {
+      "id": "T20",
+      "title": "Backend: run_forecast tool with persistence and DeptxCategory refusal (forecasting/forecast.py)",
+      "description": "Create backend/forecasting/forecast.py with `run_forecast(conn, dataset_id, entity_level, entity_name=None, horizon=4, planned_budget_total=None, force_recompute=False)`. Steps: (1) If entity_level is dept_x_category, immediately return RunForecastResponse with refusal string (§5.1 exact text). (2) Pull spend-vs-budget ratio time series per §5.2. (3) Run rolling_origin_cv with all 5 permitted models. (4) Compute dollar forecast: ratio × SUM(budget FY2026) for entity, stored as planned_budget_total. (5) Persist to forecast_results DuckDB table (§5.7 DDL). (6) Check cache before recomputing unless force_recompute=True. Returns RunForecastResponse with all fields including dollar fields, stl_available, confidence_label, model_name, cv_mae, cv_smape. Entity < 9 quarters: confidence Low, no cv_mae/smape. Travel & Conferences (7 quarters): no SeasonalNaive. Verify: `pytest tests/test_forecasting.py::test_run_forecast_total` returns confidence label and 4 forecast points with non-null dollar fields.",
+      "phase": "backend",
+      "depends_on": ["T19"],
+      "done": false
+    },
+    {
+      "id": "T21",
+      "title": "Tests: forecasting unit tests (tests/test_forecasting.py)",
+      "description": "Write tests/test_forecasting.py covering: test_all_models_produce_intervals (5 models on 12-point synthetic series), test_seasonal_naive_requires_8_quarters (< 8 points raises or returns None), test_confidence_label_logic (all boundary cases: 6 quarters→Low, 8 exactly→Low, 9 exactly→Low, MAE=0.15→Low, MAE=0.14→Medium, MAE=0.04+sMAPE=9→High, pi_width=0.31→Medium override), test_run_forecast_total (33 series: total+16 depts+10 cats+6 funds all produce forecasts), test_dept_x_category_refusal (returns refusal string), test_forecast_persisted_and_cached (force_recompute=False returns same result), test_liberal_arts_low_confidence (6 quarters → Low), test_travel_conferences_no_seasonal_naive (7 quarters, SeasonalNaive not selected). Verify: `pytest tests/test_forecasting.py -v` all pass.",
+      "phase": "backend",
+      "depends_on": ["T20"],
+      "done": false
+    },
+    {
+      "id": "T22",
+      "title": "Backend: all 7 tool Pydantic models and JSON schemas (tools/definitions.py)",
+      "description": "Create backend/tools/definitions.py with all Pydantic request/response models for all 7 tools exactly as specified in §6: ListEntitiesRequest/Response, QueryActualsRequest/Response (with dq_warnings, entity_not_found flag), RunForecastRequest/Response (with dollar fields, dollar_forecast_available, refusal), DetectAnomaliesRequest/Response (with confusion_matrix), ComparePeriodRequest/Response (all pre-computed deltas), ExplainVarianceRequest/Response (with quarterly_time_series), GetReportingHealthRequest/Response (with descriptive_note). Also create TOOL_SCHEMAS list with the JSON schemas for all 7 tools matching §6 exactly (including 'never compute these numbers yourself' language in query_actuals and compare_periods descriptions). Verify: `python -c 'from tools.definitions import TOOL_SCHEMAS; print(len(TOOL_SCHEMAS))'` prints 7.",
+      "phase": "backend",
+      "depends_on": ["T12", "T13", "T16", "T17", "T20"],
+      "done": false
+    },
+    {
+      "id": "T23",
+      "title": "Backend: tool dispatcher (tools/dispatcher.py)",
+      "description": "Create backend/tools/dispatcher.py with `dispatch_tool(tool_name, tool_input, conn, dataset_id)` that routes tool calls to the correct function: list_entities→query catalog, query_actuals→build_variance_query, run_forecast→run_forecast(), detect_anomalies→detect_anomalies()+detect_persistent_patterns()+compute_confusion_matrix(), compare_periods→two DuckDB queries + pre-computed deltas, explain_variance→explain_variance(), get_reporting_health→get_reporting_health(). Handles entity_not_found (returns response with entity_not_found=True). All arithmetic performed by tools, never deferred to LLM. Verify: `pytest tests/test_tools.py::test_all_tools_dispatch` passes calling each tool with valid sample inputs.",
+      "phase": "backend",
+      "depends_on": ["T22"],
+      "done": false
+    },
+    {
+      "id": "T24",
+      "title": "Backend: system prompt (agent/prompts.py)",
+      "description": "Create backend/agent/prompts.py with SYSTEM_PROMPT string containing all 5 constraints from §R5-05: (a) refuse numeric questions without a tool call first, (b) state when data is insufficient, (c) state when series is too short to forecast, (d) label unverifiable causes as hypotheses, (e) treat process health as descriptive only. Include verbatim DESCRIPTIVE ONLY text from §4.3: 'DESCRIPTIVE ONLY: All process health statistics are descriptive summaries of observed data. You must not assert or imply causal relationships between any process column ... and variance size or direction.' Also include instructions from §6 Tool 3 for dollar_forecast_available=false handling, and the dept_x_category refusal instruction. Verify: `pytest tests/test_tools.py::test_descriptive_only_enforcement` passes.",
+      "phase": "backend",
+      "depends_on": ["T22"],
+      "done": false
+    },
+    {
+      "id": "T25",
+      "title": "Backend: grounding check (agent/grounding.py)",
+      "description": "Create backend/agent/grounding.py with `run_grounding_check(response_text, tool_results)`. Implements §7.1 exactly: (1) extract_numerics() using the 5 NUMERIC_PATTERNS regexes for bare dollar, abbreviated dollar ($M/$K), percentage, bare integer, fiscal period. (2) build_evidence_lookup(tool_results) indexing all numeric fields from tool result dicts. (3) Match each extracted numeric against evidence using the exact tolerance table from §7.1 Step 3: bare dollar ±$1, abbreviated $NM → [N×1M−50K, N×1M+449K], $NK → ±499, percentage ±0.05ppt, bare integer exact, fiscal period literal. Returns dict with 'failed_values' list. Logs count only (SYS-03). Verify: `pytest tests/test_grounding.py` passes all 4 tests including test_grounding_flag_triggers and test_grounding_exact_dollar_boundary from §7.2.",
+      "phase": "backend",
+      "depends_on": ["T22"],
+      "done": false
+    },
+    {
+      "id": "T26",
+      "title": "Tests: grounding check tests (tests/test_grounding.py)",
+      "description": "Write tests/test_grounding.py with all tests from §7.2: test_grounding_flag_triggers ($204,000 fabricated, 13.5% passes), test_grounding_exact_dollar_boundary ($108,694 within ±$1 passes; $109,000 fails), test_abbreviated_dollar_M (value 1,203,552 matches '$1.2M'), test_abbreviated_dollar_K (value 108,693 matches '$108K'), test_percentage_tolerance (13.52% matches '13.5%'), test_fiscal_period_literal ('FY2024 Q3' must appear exactly in tool results). Verify: `pytest tests/test_grounding.py -v` all pass.",
+      "phase": "backend",
+      "depends_on": ["T25"],
+      "done": false
+    },
+    {
+      "id": "T27",
+      "title": "Backend: Bedrock agent loop with SSE streaming (agent/loop.py)",
+      "description": "Create backend/agent/loop.py with `run_agent_loop(session_id, dataset_id, message, conversation_history, replay_mode=False)` as an async generator of SSE events. When replay_mode=False: instantiates boto3 bedrock-runtime client (model ID from BEDROCK_MODEL_ID env, 30s timeout, 3 retries with 1s/2s/4s backoff on ThrottlingException/ServiceUnavailableException per §8.3). Calls converse_stream with SYSTEM_PROMPT, TOOL_SCHEMAS, temperature=0.0, maxTokens=2048. Emits token events from contentBlockDelta. On toolUse block: dispatches via dispatcher, emits tool_call and tool_result events, appends to conversation. Max 10 iterations. After final text: calls run_grounding_check, emits grounding_ok or grounding_flag. Emits sources event. Emits [DONE]. Handles max_tokens stop reason with visible warning. Register POST /chat in main.py using StreamingResponse(media_type='text/event-stream'). Verify: `pytest tests/test_tools.py::test_agent_loop_mock_bedrock` passes using a mocked boto3 client.",
+      "phase": "backend",
+      "depends_on": ["T23", "T24", "T25"],
+      "done": false
+    },
+    {
+      "id": "T28",
+      "title": "Backend: replay mode loader and fuzzy matching (replay/loader.py)",
+      "description": "Create backend/replay/loader.py with ReplayLoader class: loads all 7 JSON trace files from backend/replay/. `find_best_match(user_input)` uses difflib SequenceMatcher ratio ≥ 0.85 case-insensitive stripped against each trace's 'prompt' field; returns best match dict with trace_name and similarity, or None if no match above threshold. When REPLAY_ACTIVE=True: agent loop is bypassed entirely in POST /chat; BEDROCK_MODEL_ID and AWS credentials are NOT validated at startup; boto3 client is NOT instantiated. On match: replay tool_calls and assistant_text as SSE events (same format as live); run grounding check on replayed text. On no match: emit structured error event. Verify: `pytest tests/test_replay.py::test_replay_fuzzy_match` passes all 4 parametrize cases from §9.3.",
+      "phase": "backend",
+      "depends_on": ["T27"],
+      "done": false
+    },
+    {
+      "id": "T29",
+      "title": "Backend: 7 replay trace JSON files (backend/replay/*.json)",
+      "description": "Create all 7 replay trace files in backend/replay/ per the tool-sequence table in §9.2. Each file must have 'prompt', 'tool_calls' (with exact tool names, inputs, and results matching actual computed values from Team6Dataset.xlsx), 'assistant_text' (citing only numbers traceable to tool_calls[*].result), and 'grounding_check': 'pass'. Trace 01: query_actuals(entity_level=department) → top 3 over-budget depts with correct %. Trace 02: explain_variance(C&C) + detect_anomalies(C&C) → per-year variances, persistent pattern. Trace 03: detect_anomalies(category) → persistent patterns. Trace 04: run_forecast(total, horizon=4) → ratio+dollar forecasts with CIs. Trace 05: detect_anomalies(total) → all 17 GT rows in anomalies list. Trace 06: get_reporting_health(total)+get_reporting_health(department) → process stats, no causal claims. Trace 07: list_entities() → insufficient-data response about Bursar with list of 16 departments. Verify: `pytest tests/test_replay.py::test_replay_passes_grounding` passes for all 7 traces.",
+      "phase": "backend",
+      "depends_on": ["T28"],
+      "done": false
+    },
+    {
+      "id": "T30",
+      "title": "Tests: replay tests (tests/test_replay.py)",
+      "description": "Write tests/test_replay.py with: test_replay_fuzzy_match (4 parametrize cases from §9.3: exact match→prompt_01, lowercase variant→prompt_07, capital O variant→prompt_07, weather question→None), test_replay_passes_grounding (parametrize over all 7 trace files; each trace's assistant_text must pass run_grounding_check with 0 failed_values), test_replay_no_bedrock_creds (with REPLAY_MODE=true and no AWS creds env vars, POST /chat with prompt_01 text returns 200 with SSE events, no boto3 error), test_replay_unknown_prompt_returns_error (non-scripted prompt returns structured error event). Verify: `pytest tests/test_replay.py -v` all pass.",
+      "phase": "backend",
+      "depends_on": ["T29"],
+      "done": false
+    },
+    {
+      "id": "T31",
+      "title": "Backend: POST /forecast endpoint and GET /kpis wired up in main.py",
+      "description": "Register remaining endpoints in backend/main.py: POST /forecast (RunForecastRequest body) triggers run_forecast() for an entity; useful for pre-computing all 33 forecast series on demand. Also ensure GET /kpis endpoint is registered and wired to analysis/kpis.py. Add CORS middleware allowing frontend origin (http://localhost:3000 and VITE_API_BASE_URL). Verify: `docker-compose up -d backend && curl -s http://localhost:8000/health` returns {\"status\":\"ok\"} and `curl -s http://localhost:8000/datasets` returns valid JSON.",
+      "phase": "backend",
+      "depends_on": ["T27", "T16", "T20"],
+      "done": false
+    },
+    {
+      "id": "T32",
+      "title": "Frontend: useSSEChat hook (hooks/useSSEChat.ts)",
+      "description": "Create frontend/src/hooks/useSSEChat.ts implementing the fetch+ReadableStream consumer from §8.2. The `streamChat(request: ChatRequest)` async generator parses SSE lines split on '\\n\\n', skips '[DONE]'. Emits typed SSEEvent objects discriminated by 'type': token, tool_call, tool_result, grounding_ok, grounding_flag, sources, error. Hook manages state: tokens (accumulated text), toolCalls (for sources panel), groundingFailed (boolean + failed values), isStreaming. Verify: unit test with a mocked ReadableStream returning known SSE bytes produces the correct sequence of events.",
+      "phase": "frontend",
+      "depends_on": ["T03"],
+      "done": false
+    },
+    {
+      "id": "T33",
+      "title": "Frontend: Chat component with grounding flag banner (components/Chat.tsx)",
+      "description": "Create frontend/src/components/Chat.tsx with: (1) message input with autoFocus, Enter to submit, Shift+Enter for newline (§12.2). (2) Chat bubbles streaming tokens in real time from useSSEChat. (3) Grounding flag banner: visible amber warning (#FEF3C7 bg, #78350F text, contrast ≥8:1 per §12.3) shown above chat bubble when grounding_flag event arrives; includes failed_values list. (4) Sources/evidence expandable panel (collapsed by default, keyboard-activatable per §12.2). Sources panel lists each tool call and result summary; shows record_id values where present. Tab order: message input → submit → sources toggle → source items. Verify: `npm run build` exits 0 in the frontend container.",
+      "phase": "frontend",
+      "depends_on": ["T32"],
+      "done": false
+    },
+    {
+      "id": "T34",
+      "title": "Frontend: Upload UI and column mapping (components/Upload.tsx)",
+      "description": "Create frontend/src/components/Upload.tsx with: drag-and-drop or file-input for CSV/XLSX, dataset_name text field. On upload: POST /upload, receive ColumnMappingProposal, render a mapping table with dropdowns for each source column (pre-filled with suggestions). User can override suggestions. On confirm: POST /upload/confirm with ColumnMappingRequest, display ValidationReport (row counts, DQ findings as amber callouts, fiscal period range). Show 'Load sample data' button when no dataset is loaded — triggers POST /upload/sample. Show available-view notice for unmapped optional fields (§R1-04). Verify: `npm run build` exits 0.",
+      "phase": "frontend",
+      "depends_on": ["T33"],
+      "done": false
+    },
+    {
+      "id": "T35",
+      "title": "Frontend: TrendChart component with STL gating and ARIA (components/TrendChart.tsx)",
+      "description": "Create frontend/src/components/TrendChart.tsx wrapping Recharts LineChart. (1) Receives quarterly_time_series data from explain_variance response. (2) If entity has ≥8 quarters and STL data is present: overlay trend and seasonal components as separate lines. (3) If entity has <8 quarters (stl_available=false): render raw data points + client-side OLS regression line from quarterly_time_series; show non-dismissible note: 'STL decomposition unavailable: [Entity] has only [N] quarters of data (minimum 8 required).' per §3.6. (4) ARIA labels per §12.1: role='img', aria-label, <title>, <desc>. (5) Visually hidden <table> with screen-reader data per §12.1. (6) Chart lines use ≥4 visually distinct patterns (solid/dashed/dotted/dot-dashed) per §12.3. Verify: `npm run build` exits 0.",
+      "phase": "frontend",
+      "depends_on": ["T33"],
+      "done": false
+    },
+    {
+      "id": "T36",
+      "title": "Frontend: KPI panel (components/KpiPanel.tsx)",
+      "description": "Create frontend/src/components/KpiPanel.tsx that calls GET /kpis on mount and on dataset switch. Displays: total actual vs budget variance ($ and %, by fiscal year from fiscal_year_summary), top over-budget and under-budget departments and categories (from top_over/under_ arrays), anomaly count, source flag disagreement count. Uses native <select> for fiscal year filter. Must show the same numbers as chat tool results (enforced by shared build_variance_query() on backend). Accessible: all interactive elements keyboard-focusable, WCAG 2.1 AA contrast. Verify: `npm run build` exits 0.",
+      "phase": "frontend",
+      "depends_on": ["T33"],
+      "done": false
+    },
+    {
+      "id": "T37",
+      "title": "Frontend: Anomaly table with drill-down (components/AnomalyTable.tsx)",
+      "description": "Create frontend/src/components/AnomalyTable.tsx displaying anomaly detection results. Columns: record_id, department, category, fiscal_year, fiscal_quarter, variance_pct, z_score, severity, source_anomaly_flag, source_anomaly_type, peer_group. Sortable column headers as <button> within <th> per §12.2. Drill-down row: Enter on focused row (tabIndex=0, onKeyDown). Shows confusion matrix counts (TP/FP/FN/TN) from detector vs source panel per §3.4. Skip link at page top: 'Skip to anomaly table'. Persistent pattern badges ('persistent in N of 3 years' label with non-qualifying year note per §3.5). Severity color: high=red #DC2626 (5.9:1), medium=amber #D97706 bold large text (3:1 large), low=gray #6B7280 (4.6:1). Verify: `npm run build` exits 0.",
+      "phase": "frontend",
+      "depends_on": ["T33"],
+      "done": false
+    },
+    {
+      "id": "T38",
+      "title": "Frontend: BenchmarkPanel component (components/BenchmarkPanel.tsx)",
+      "description": "Create frontend/src/components/BenchmarkPanel.tsx displaying the source forecast benchmark per §5.8 and §10.2. Shows: application model CV error (MAE and sMAPE) vs source forecast mean absolute gap. The caveat text is dynamic: if mean_gap < 5% uses the 'unusually close/post-hoc' wording; if ≥5% uses the 'upper-bound reference' wording. No static '4.1%' or '14.46%' in code — all from API response. BUD-00018 DQ warning rendered as amber inline callout (not dismissible toast) per §10.1, using #92400E on #FFFBEB (8.8:1 contrast). Verify: `npm run build` exits 0.",
+      "phase": "frontend",
+      "depends_on": ["T33"],
+      "done": false
+    },
+    {
+      "id": "T39",
+      "title": "Frontend: Dashboard layout and dataset selector (components/Dashboard.tsx, App.tsx)",
+      "description": "Create frontend/src/components/Dashboard.tsx assembling KpiPanel, TrendChart, AnomalyTable, BenchmarkPanel. Create App.tsx with routing: /upload (Upload.tsx) when no dataset loaded, /dashboard (Dashboard.tsx) after dataset loaded. Dataset selector: native <select> element in header per §12.2, calls GET /datasets on mount, updates active dataset_id in app state. VITE_API_BASE_URL used for all fetch calls. Verify: `docker-compose up` and navigating to http://localhost:3000 loads the upload screen without console errors.",
+      "phase": "frontend",
+      "depends_on": ["T34", "T35", "T36", "T37", "T38"],
+      "done": false
+    },
+    {
+      "id": "T40",
+      "title": "End-to-end skeleton smoke test: upload sample data, run one tool call, view SSE response in browser",
+      "description": "Manual verification step: run `docker-compose up`, click 'Load sample data', confirm validation report shows 300 rows accepted and 5 DQ findings, open chat, type 'Which departments are furthest over budget, and by how much?', confirm SSE tokens stream progressively in browser, confirm sources panel shows query_actuals tool call, confirm KPI panel shows College of Architecture as top over-budget. This validates the full vertical slice: ingest → DuckDB → tool dispatch → Bedrock → SSE → React render. Document any failures as blocking issues. Verify: the above steps complete without error.",
+      "phase": "frontend",
+      "depends_on": ["T31", "T39"],
+      "done": false
+    },
+    {
+      "id": "T41",
+      "title": "QA: grounding check integration test with fabricated number (tests/test_grounding.py extended)",
+      "description": "Extend tests/test_grounding.py with integration-level tests: test_live_agent_loop_grounding_flag (mock boto3 to return a response containing $204,000 where tool results only have $108,693; assert grounding_flag SSE event is emitted with '$204,000' in failed_values), test_grounding_ok_for_valid_response (mock boto3 to return a response with $108,693 and 13.5%; both pass grounding check; grounding_ok event emitted). Also test that the SYS-03 log does not contain the dollar value — check log output does not contain '$204,000'. Verify: `pytest tests/test_grounding.py -v` all pass.",
+      "phase": "qa",
+      "depends_on": ["T27", "T26"],
+      "done": false
+    },
+    {
+      "id": "T42",
+      "title": "QA: anomaly detection ground-truth full regression (tests/test_anomaly.py, full dataset)",
+      "description": "Ensure tests/test_anomaly.py::test_anomaly_ground_truth runs against the full Team6Dataset.xlsx (300 rows, not the fixture). Confirms all 17 rows from ground_truth.md §2 are in the flagged set. Confirms ≤5 extra flags. Also run test_detector_source_agreement (TP+FP+FN+TN=300). These tests require the full dataset and must be marked @pytest.mark.slow. Verify: `pytest tests/test_anomaly.py -v -m slow` all pass.",
+      "phase": "qa",
+      "depends_on": ["T14", "T15"],
+      "done": false
+    },
+    {
+      "id": "T43",
+      "title": "QA: persistent pattern ground-truth test (tests/test_anomaly.py extended)",
+      "description": "Add to tests/test_anomaly.py: test_persistent_patterns_full_dataset that loads Team6Dataset.xlsx, calls detect_persistent_patterns(), and asserts the exact patterns from ground_truth.md §3: 4 over-budget categories (C&C all 3, E&T FY25+FY26, Facility FY24+FY25, SAS FY25+FY26), 4 under-budget categories (T&C all 3, PD all 3, AdminOH all 3, ResOps FY25+FY26), 5 over-budget departments (Architecture all 3, Pharmacy all 3, OfficeOfResearch FY24+FY26, CAHS FY24+FY25, CLAS FY24+FY26), 6 under-budget departments (Education FY24+FY25, Medicine FY24+FY26, Nursing FY25+FY26, UrbanPlanning FY24+FY26, Graduate FY25+FY26, CBA FY24+FY26). Verify: `pytest tests/test_anomaly.py::test_persistent_patterns_full_dataset -v` passes.",
+      "phase": "qa",
+      "depends_on": ["T14"],
+      "done": false
+    },
+    {
+      "id": "T44",
+      "title": "QA: process health 'descriptive only' enforcement test (tests/test_tools.py)",
+      "description": "Add to tests/test_tools.py: test_descriptive_only_enforcement — imports SYSTEM_PROMPT from agent/prompts.py, calls get_reporting_health with sample data, asserts 'DESCRIPTIVE ONLY' in SYSTEM_PROMPT, asserts 'descriptive_note' in tool response, asserts 'causal' in response.descriptive_note.lower(). Also test_process_health_no_causal_claim — calls the full agent loop with mock Bedrock returning a process-health response that contains the word 'cause'; asserts grounding_flag is NOT triggered (the causal-claim check is a system-prompt-level constraint, not a grounding check), but also asserts the LLM response does not contain a direct causal claim (check via post-processing in the test). Verify: `pytest tests/test_tools.py::test_descriptive_only_enforcement -v` passes.",
+      "phase": "qa",
+      "depends_on": ["T17", "T24"],
+      "done": false
+    },
+    {
+      "id": "T45",
+      "title": "QA: Bursar insufficient-data response test (tests/test_tools.py)",
+      "description": "Add to tests/test_tools.py: test_bursar_insufficient_data — mock Bedrock to simulate prompt 7 ('What did the Bursar's office spend on travel?'). The tool dispatcher must first call list_entities (entity not found → entity_not_found=True in query_actuals or direct list_entities call). Assert that the final SSE response does NOT contain a dollar figure, does contain the phrase 'insufficient data' or 'no entity' or similar, and lists the 16 available departments. Use replay mode as the deterministic path: test_replay_07_bursar_returns_insufficient_data loads prompt_07 trace and asserts 'assistant_text' contains the 16 department names and contains no dollar figures. Verify: `pytest tests/test_tools.py -k bursar -v` passes.",
+      "phase": "qa",
+      "depends_on": ["T29", "T30"],
+      "done": false
+    },
+    {
+      "id": "T46",
+      "title": "QA: replay mode works without Bedrock credentials (integration)",
+      "description": "Write tests/test_replay.py::test_replay_no_bedrock_creds: set environment REPLAY_MODE=true, unset AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, BEDROCK_MODEL_ID. POST /chat with each of the 7 scripted prompts. Assert HTTP 200 with SSE response stream. Assert no boto3 instantiation error in logs. Assert grounding_check passes for each replayed response. This test proves AC8: replay mode completes the full demo path without credentials. Use pytest-subprocess or monkeypatching to ensure boto3 is never imported when REPLAY_ACTIVE=True. Verify: `pytest tests/test_replay.py::test_replay_no_bedrock_creds -v` passes.",
+      "phase": "qa",
+      "depends_on": ["T30"],
+      "done": false
+    },
+    {
+      "id": "T47",
+      "title": "QA: KPI panel consistency test — dashboard and chat tool results must match",
+      "description": "Add to tests/test_tools.py: test_kpi_panel_matches_query_actuals — loads sample dataset, calls GET /kpis, calls query_actuals(entity_level=department), asserts kpi['top_over_departments'][0]['entity_name'] == 'College of Architecture', asserts abs(kpi top_over_departments[0].variance_pct_agg - tool result for Architecture) < 0.01. This enforces the architectural invariant from §3.7 that KPI panel and chat tools produce identical numbers. Verify: `pytest tests/test_tools.py::test_kpi_panel_matches_query_actuals -v` passes.",
+      "phase": "qa",
+      "depends_on": ["T16", "T23"],
+      "done": false
+    },
+    {
+      "id": "T48",
+      "title": "QA: full reconciliation regression suite (@pytest.mark.slow)",
+      "description": "Run the full reconciliation suite from tests/test_reconciliation.py against Team6Dataset.xlsx. All assertions from §11.4 must pass: 300 rows, 16 depts, 10 cats, 6 fund sources, forecast_accuracy_pct mean 95.91±0.05, FY variance %, 10 category variance %, 6 department spot checks. Also assert natural key non-uniqueness (23 duplicate 4-col combos) and 6-col key uniqueness. Verify: `pytest tests/test_reconciliation.py -v -m slow` all pass.",
+      "phase": "qa",
+      "depends_on": ["T15"],
+      "done": false
+    },
+    {
+      "id": "T49",
+      "title": "Demo: verify all 7 scripted prompts end-to-end in replay mode",
+      "description": "Run all 7 demo prompts from R6-02 through the running app in replay mode. Set REPLAY_MODE=true in .env. For each prompt: (1) type the exact prompt text in the chat UI, (2) verify the expected output matches the design ground truth. Expected outputs per §R6-02: Prompt 1→Architecture/Pharmacy/OfficeOfResearch with variance figures; Prompt 2→C&C persistent pattern all 3 years, OfficeOfResearch contributor, no 'compare_periods' tool call; Prompt 3→T&C, PD, AdminOH, ResOps under-budget; Prompt 4→FY2027 forecast with ratio+dollar CIs, model name, confidence label, coverage caveat; Prompt 5→all 17 GT record_ids with z_score/variance_pct, detector-vs-source note; Prompt 6→process health stats, no causal claims; Prompt 7→insufficient-data, no guess, 16 departments listed. Verify: all 7 prompts complete without error and match expected outputs.",
+      "phase": "demo",
+      "depends_on": ["T40", "T46"],
+      "done": false
+    },
+    {
+      "id": "T50",
+      "title": "README: write all 4 required sections",
+      "description": "Write README.md in the repo root with the 4 sections required by §11.2: (1) Run Instructions: prerequisites (Docker, docker-compose, Node.js), `cp .env.example .env`, credential setup for live mode, `docker-compose up`, browser URL http://localhost:3000. (2) Architecture Diagram: ASCII or Mermaid of two-service layout (React frontend → FastAPI backend → DuckDB + Bedrock). (3) How Grounding Works: plain-English explanation of post-generation numeric extraction, tolerance table, what the visible flag means. (4) Data Caveats: summarises all 6 DQ findings from §2.6 (BUD-00018, source forecast post-hoc, duplicate natural keys, anomaly sign inconsistency, ±50 cap, 23 duplicate combos). Also add a 'Deploying to AWS' section referencing infra/README.md per aws-cdk-requirements.md. Verify: README renders on GitHub/GitLab with all 4 sections visible.",
+      "phase": "demo",
+      "depends_on": ["T40"],
+      "done": false
+    },
+    {
+      "id": "T51",
+      "title": "Infra: CDK stack skeleton and VPC/ECR (infra/stacks/budget_forecasting_stack.py)",
+      "description": "Create infra/app.py (CDK app entry point) and infra/stacks/budget_forecasting_stack.py (BudgetForecastingStack). Add infra/requirements.txt (aws-cdk-lib, constructs pinned). Provision: VPC with 2 AZs, ECR repository 'budget-forecasting-backend'. Create infra/README.md with deploy instructions from aws-cdk-requirements.md (bootstrap, build frontend, cdk deploy, ssm put-parameter, s3 cp sample data). Verify: `cd infra && pip install -r requirements.txt && cdk synth` exits 0 (requires CDK bootstrap not complete, so synth only).",
+      "phase": "infra",
+      "depends_on": ["T01"],
+      "done": false
+    },
+    {
+      "id": "T52",
+      "title": "Infra: ECS Fargate, EFS, ALB resources in CDK stack",
+      "description": "Extend infra/stacks/budget_forecasting_stack.py to add: EFS FileSystem 'budget-forecasting-duckdb-efs' with access point at /duckdb. ECS Cluster 'budget-forecasting-cluster'. Fargate Task Definition (1 vCPU, 2GB RAM, FastAPI backend image from ECR, EFS volume at /data/duckdb, env vars S3_DATASET_BUCKET, BEDROCK_MODEL_ID from SSM). ECS Service (desired count 1). ALB with HTTP listener, idle_timeout=310s (> max Bedrock response for SSE streaming), health check on GET /health. IAM task role: bedrock:InvokeModelWithResponseStream, S3 GetObject/PutObject on dataset bucket, SSM GetParameter. IAM execution role: ECR pull, EFS mount, CloudWatch Logs. Verify: `cdk synth` exits 0 with Fargate and ALB resources in template.",
+      "phase": "infra",
+      "depends_on": ["T51"],
+      "done": false
+    },
+    {
+      "id": "T53",
+      "title": "Infra: S3 frontend bucket, CloudFront distribution, SSM parameters in CDK stack",
+      "description": "Extend infra/stacks/budget_forecasting_stack.py to add: S3 bucket 'budget-forecasting-frontend' (public access blocked, CloudFront OAI). S3 bucket 'budget-forecasting-data' (dataset storage, public access blocked, only Fargate task role can read/write). CDK BucketDeployment uploading frontend/dist to frontend bucket. CloudFront distribution with two origins: S3 (frontend) and ALB (backend, path /api/* and /sse/*). SSM Parameters: /budget-forecasting/bedrock-model-id (SecureString), /budget-forecasting/replay-active (String). CloudWatch Log Group /ecs/budget-forecasting-backend with 7-day retention. Output ALB DNS name and CloudFront URL. Verify: `cdk synth` exits 0 with all S3, CloudFront, and SSM resources in template.",
+      "phase": "infra",
+      "depends_on": ["T52"],
+      "done": false
+    }
+  ]
+}
