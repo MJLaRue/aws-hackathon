@@ -137,16 +137,16 @@ function AnomalyBadge({ status }) {
 
 function FilterBar({ fy, setFy, dept, setDept, cat, setCat, query, setQuery }) {
   return (
-    <div className="filter-bar dash-filters">
-      <label className="search">
+    <div className="dash-filters">
+      <div className="dash-search">
         <Search size={15} />
         <input
           placeholder="Search departments or categories…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-      </label>
-      <label>
+      </div>
+      <div className="dash-filter-select">
         <Archive size={14} />
         <select value={fy} onChange={(e) => setFy(e.target.value)}>
           <option value="">All years</option>
@@ -154,8 +154,8 @@ function FilterBar({ fy, setFy, dept, setDept, cat, setCat, query, setQuery }) {
             <option key={y}>{y}</option>
           ))}
         </select>
-      </label>
-      <label>
+      </div>
+      <div className="dash-filter-select">
         <Building2 size={14} />
         <select value={dept} onChange={(e) => setDept(e.target.value)}>
           <option value="">All departments</option>
@@ -163,8 +163,8 @@ function FilterBar({ fy, setFy, dept, setDept, cat, setCat, query, setQuery }) {
             <option key={d}>{d}</option>
           ))}
         </select>
-      </label>
-      <label>
+      </div>
+      <div className="dash-filter-select">
         <Table2 size={14} />
         <select value={cat} onChange={(e) => setCat(e.target.value)}>
           <option value="">All categories</option>
@@ -172,7 +172,7 @@ function FilterBar({ fy, setFy, dept, setDept, cat, setCat, query, setQuery }) {
             <option key={c}>{c}</option>
           ))}
         </select>
-      </label>
+      </div>
       {(fy || dept || cat || query) && (
         <button
           className="button ghost small"
@@ -305,31 +305,31 @@ function Overview({ rows }) {
           <div className="radar-items">
             <div className="radar-item">
               <span className="attention-icon"><AlertTriangle size={20} /></span>
-              <span>
+              <div>
                 <strong>{activeAnomalies} active anomalies</strong>
                 <small>Pending approval, correction, or review</small>
-              </span>
+              </div>
             </div>
             <div className="radar-item">
               <span className="attention-icon"><Activity size={20} /></span>
-              <span>
+              <div>
                 <strong>Avg confidence: {avgConf}/5</strong>
                 <small>Across all filtered records</small>
-              </span>
+              </div>
             </div>
             <div className="radar-item">
               <span className="attention-icon"><TrendingUp size={20} /></span>
-              <span>
+              <div>
                 <strong>{rows.filter((r) => r.atype === "Overrun").length} overrun records</strong>
                 <small>Actual spend exceeded budget</small>
-              </span>
+              </div>
             </div>
             <div className="radar-item">
               <span className="attention-icon"><FileSearch size={20} /></span>
-              <span>
+              <div>
                 <strong>{rows.filter((r) => r.atype === "YoY Spike").length} YoY spikes</strong>
                 <small>Year-over-year spend anomalies</small>
-              </span>
+              </div>
             </div>
           </div>
           <div className="radar-footer">
