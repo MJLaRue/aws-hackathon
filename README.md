@@ -16,11 +16,11 @@ npm run dev
 
 Open **http://127.0.0.1:5173**, select **Open your workspace**, then a development account:
 
-| Account                | Access                                                                                  |
-| ---------------------- | --------------------------------------------------------------------------------------- |
-| Alex Morgan — admin    | All departments and administration                                                      |
-| Jordan Lee — manager   | Computer Science; financial editing and scoped audit history                            |
-| Taylor Reed — reviewer | College child workspaces; read-only budgets and expenses; no salaries or administration |
+| Account                | Access                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| Alex Morgan — admin    | All departments and administration                                                       |
+| Jordan Lee — manager   | Computer Science; financial editing and scoped audit history                             |
+| Taylor Reed — reviewer | UIC department workspaces; read-only budgets and expenses; no salaries or administration |
 
 Seeded financial records and employee identities are **synthetic**, across five departments and three fiscal years. No real UIC employee or financial data is included. Salary rosters are illustrative appointments, not a reconciliation of the complete personnel budget. Seeding skips databases containing users and is disabled in production.
 

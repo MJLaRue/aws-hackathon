@@ -74,8 +74,8 @@ export async function seed() {
     );
     const parent = await M.departments.create(
       {
-        dept_code: "COE",
-        dept_name: "College of Engineering",
+        dept_code: "UIC",
+        dept_name: "UIC",
         is_workspace: false,
       },
       { transaction },

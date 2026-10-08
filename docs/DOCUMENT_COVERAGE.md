@@ -1,6 +1,6 @@
 # Coverage of the supplied document
 
-Source: **Budget Development Database Schema and Features**, UIC College of Engineering, October 7, 2026. The original source files named there were not supplied. This is a new implementation of the documented model/behavior, not a verified reproduction of its original internals.
+Source: **Budget Development Database Schema and Features**, dated October 7, 2026. The original source files named there were not supplied. This is a new implementation of the documented model/behavior, not a verified reproduction of its original internals.
 
 | Document feature                       | Implementation                                                                                              | Verification / qualification                                                                                                 |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |

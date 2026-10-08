@@ -357,4 +357,23 @@ export async function migrate() {
       replacements: ["002-timestamp-defaults"],
     });
   }
+  const [branding] = await db.query(
+    "SELECT name FROM `SequelizeMeta` WHERE name = ?",
+    { replacements: ["003-uic-branding"] },
+  );
+  if (!branding.length) {
+    await db.transaction(async (transaction) => {
+      await models.departments.update(
+        { dept_code: "UIC", dept_name: "UIC" },
+        {
+          where: { dept_code: "COE", dept_name: "College of Engineering" },
+          transaction,
+        },
+      );
+      await db.query("INSERT INTO `SequelizeMeta` (name) VALUES (?)", {
+        replacements: ["003-uic-branding"],
+        transaction,
+      });
+    });
+  }
 }

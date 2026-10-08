@@ -2926,7 +2926,7 @@ function App() {
                 <X size={20} />
               </button>
             </div>
-            <div className="workspace-label">UIC / COLLEGE OF ENGINEERING</div>
+            <div className="workspace-label">UIC</div>
             <div className="sidebar-context">
               <span className="uic-mark">UIC</span>
               <div>
